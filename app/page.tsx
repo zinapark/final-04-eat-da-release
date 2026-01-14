@@ -1,5 +1,8 @@
 export default function Home() {
   return (
-    <h1>라이언 보드 v.02</h1>
+    <>
+      <h1>라이언 보드 v.02</h1>
+      <h2>client-id: { process.env.NEXT_PUBLIC_CLIENT_ID }</h2>
+    </>
   );
 }
