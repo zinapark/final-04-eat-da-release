@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import SubscriptionCard from "./SubscriptionCard";
 import BottomFixedButton from "@/app/src/components/common/BottomFixedButton";
 import ConfirmModal from "@/app/src/components/ui/ConfirmModal";
+import SubscriptionCard from "@/app/mypage/subscription/SubscriptionCard";
 
 interface SubscriptionPlan {
   id: string;
