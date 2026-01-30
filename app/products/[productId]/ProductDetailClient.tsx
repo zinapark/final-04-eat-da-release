@@ -2,18 +2,33 @@
 
 import { useState } from "react";
 import BottomFixedButton from "@/app/src/components/common/BottomFixedButton";
-import type { CartItem } from "@/types/cart";
 import CartPopup from "@/app/cart/CartPopup";
+import { CartItem } from "@/app/src/types";
+import { getAxios } from "@/lib/axios";
+import { useRouter } from "next/navigation";
 
-export default function ProductDetailClient() {
+interface ProductDetailClientProps {
+  product: {
+    _id: number;
+    name: string;
+    price: number;
+    mainImages?: { path: string; name: string }[];
+  };
+}
+
+export default function ProductDetailClient({
+  product,
+}: ProductDetailClientProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   const [items, setItems] = useState<CartItem[]>([
     {
-      id: "1",
-      name: "얼큰한 김치찌개",
-      price: 8500,
+      id: product._id.toString(),
+      name: product.name,
+      price: product.price,
       quantity: 1,
+      image: product.mainImages?.[0]?.path || "/food1.png",
     },
   ]);
 
@@ -28,8 +43,37 @@ export default function ProductDetailClient() {
 
   const handleRemoveItem = (id: string) => {
     setItems((prev) => prev.filter((it) => it.id !== id));
+    if (items.length === 1) {
+      handleClose();
+    }
   };
 
+  const handleAddToCart = async () => {
+    try {
+      const axios = getAxios();
+
+      for (const item of items) {
+        await axios.post("/carts", {
+          product_id: Number(item.id),
+          quantity: item.quantity,
+        });
+      }
+
+      router.push("/cart");
+    } catch (error) {
+      console.error("장바구니 담기 실패:", error);
+    }
+  };
+
+  const handleBuyNow = () => {
+    const directPurchase = {
+      productId: product._id,
+      quantity: items[0].quantity,
+    };
+
+    localStorage.setItem("directPurchase", JSON.stringify(directPurchase));
+    router.push("/checkout?direct=true");
+  };
   return (
     <>
       <BottomFixedButton as="button" type="button" onClick={handleOpen}>
@@ -42,8 +86,8 @@ export default function ProductDetailClient() {
         items={items}
         onQuantityChange={handleQuantityChange}
         onRemoveItem={handleRemoveItem}
-        onAddToCart={() => console.log("장바구니 담기")}
-        onBuyNow={() => console.log("바로 구매하기")}
+        onAddToCart={handleAddToCart}
+        onBuyNow={handleBuyNow}
       />
     </>
   );

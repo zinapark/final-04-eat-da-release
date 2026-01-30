@@ -5,7 +5,7 @@ import Header from "@/app/src/components/common/Header";
 import PurchaseProductItem from "@/app/src/components/ui/PurchaseProductItem";
 import { CartItemType, CartResponse } from "@/app/src/types";
 import { getAxios } from "@/lib/axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/ko";
@@ -19,6 +19,8 @@ export default function CheckoutPageClient() {
   const [isProductInfoOpen, setIsProductInfoOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItemType[]>([]);
   const [cost, setCost] = useState<CartResponse["cost"] | null>(null);
+  const searchParams = useSearchParams();
+  const isDirect = searchParams.get("direct") === "true";
 
   const tomorrow = dayjs().add(1, "day");
   const after_tomorrow = dayjs().add(2, "day");
@@ -58,7 +60,13 @@ export default function CheckoutPageClient() {
         },
       };
       const response = await axios.post("/orders", orderData);
-      await axios.delete("/carts/cleanup");
+      // 바로 구매인 경우에만 localStorage 정리
+      if (isDirect) {
+        localStorage.removeItem("directPurchase");
+      } else {
+        // 장바구니에서 구매한 경우에만 장바구니 비우기
+        await axios.delete("/carts/cleanup");
+      }
 
       router.push(`/checkout/complete?orderId=${response.data.item._id}`);
     } catch (error) {
