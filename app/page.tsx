@@ -1,11 +1,6 @@
-import "./src/styles/tailwind.css";
-import { redirect } from "next/navigation";
+import './src/styles/tailwind.css';
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <>
-      <h1>라이언 보드 v.05</h1>
-      <h2>client-id: { process.env.NEXT_PUBLIC_CLIENT_ID }</h2>
-    </>
-  );
+  return redirect('/home');
 }

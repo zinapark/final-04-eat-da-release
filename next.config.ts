@@ -32,6 +32,12 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "zipbanchan.godohosting.com",
       },
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };

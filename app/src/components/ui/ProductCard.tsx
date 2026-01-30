@@ -111,7 +111,7 @@ export default function ProductCard({
             />
           </svg>
           <p className="text-x-small ml-1">
-            {rating}({reviewCount})
+            {rating.toFixed(1)}({reviewCount})
           </p>
         </div>
         <p className="text-paragraph-md font-semibold">

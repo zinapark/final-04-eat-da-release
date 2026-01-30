@@ -6,17 +6,30 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getTokenPayload } from "@/lib/axios";
 import { getUser, getCartItems, getBookmarkCount } from "@/lib/mypage";
+import useUserStore from "@/zustand/userStore";
 
 type UserInfo = Awaited<ReturnType<typeof getUser>>;
 
 export default function MyPageClient() {
   const router = useRouter();
+  const loggedInUser = useUserStore((state) => state.user);
+  const clearUser = useUserStore((state) => state.clearUser);
+
+  const handleLogout = () => {
+    clearUser();
+    router.replace("/login");
+  };
   const [user, setUser] = useState<UserInfo>(null);
   const [cartCount, setCartCount] = useState(0);
   const [bookmarkCount, setBookmarkCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!loggedInUser) {
+      router.replace("/login?redirect=/mypage");
+      return;
+    }
+
     const fetchData = async () => {
       const tokenPayload = getTokenPayload();
       if (!tokenPayload) {
@@ -37,7 +50,11 @@ export default function MyPageClient() {
     };
 
     fetchData();
-  }, []);
+  }, [loggedInUser, router]);
+
+  if (!loggedInUser) {
+    return null;
+  }
 
   if (loading) {
     return (
@@ -48,7 +65,6 @@ export default function MyPageClient() {
   }
 
   if (!user) {
-    router.push("/home");
     return null;
   }
 
@@ -67,6 +83,7 @@ export default function MyPageClient() {
               width={60}
               height={60}
               className="w-15 h-15 rounded-full object-cover"
+              unoptimized={user.image.includes("dicebear.com")}
             />
           ) : (
             <div className="w-15 h-15 rounded-full bg-gray-600"></div>
@@ -90,7 +107,10 @@ export default function MyPageClient() {
           </div>
 
           {/* 로그아웃 */}
-          <button className="text-display-1 text-nowrap text-gray-600 hover:text-gray-700">
+          <button
+            onClick={handleLogout}
+            className="text-display-1 text-nowrap text-gray-600 hover:text-gray-700"
+          >
             로그아웃
           </button>
         </div>

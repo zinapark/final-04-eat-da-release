@@ -70,19 +70,23 @@ export interface BanchanListResponse {
   items: BanchanItem[];
 }
 
+// 수정 페이지 초기 데이터
+export interface EditBanchanInitialData {
+  id: number;
+  name: string;
+  category: string;
+  price: string;
+  description: string;
+  ingredients: string;
+  servings: string;
+  quantity: string;
+  buyQuantity: number;
+  pickupPlace: string;
+  images: string[];
+  show: boolean;
+}
+
 // 수정 페이지 props
 export interface EditBanchanClientProps {
-  initialData: {
-    id: number;
-    name: string;
-    category: string;
-    price: string;
-    description: string;
-    ingredients: string;
-    servings: string;
-    quantity: string;
-    pickupPlace: string;
-    images: string[];
-    show: boolean;
-  };
+  id: string;
 }

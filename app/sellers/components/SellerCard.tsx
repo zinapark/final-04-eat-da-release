@@ -1,61 +1,60 @@
-import Image from "next/image";
-import Link from "next/link";
+import Image from 'next/image';
+import Link from 'next/link';
 
 interface SellerCardProps {
+  sellerId: number;
+  sellerName: string;
+  rating: number;
+  reviewCount: number;
+  profileImage?: string;
+  description?: string;
+  topDishes: { imageSrc: string; name: string }[];
   showDivider?: boolean;
 }
 
-export default function SellerCard({ showDivider = true }: SellerCardProps) {
+export default function SellerCard({
+  sellerId,
+  sellerName,
+  rating,
+  reviewCount,
+  profileImage = '/seller/seller1.png',
+  description = '정성스럽게 만든 집밥을 나눕니다.',
+  topDishes,
+  showDivider = true,
+}: SellerCardProps) {
   return (
-    <Link href="/sellers/1" className="flex flex-col">
+    <Link href={`/sellers/${sellerId}`} className="flex flex-col">
       <div>
         {/* 반찬 썸네일 */}
         <section className="mt-4 flex px-5 gap-1 overflow-x-auto scrollbar-hide">
-          <div className="relative aspect-square w-28 shrink-0 overflow-hidden">
-            <Image
-              src="/food/food_01.png"
-              alt="얼큰한 김치찌개 리뷰 이미지"
-              fill
-              className="object-cover"
-            />
-          </div>
-          <div className="relative aspect-square w-28 shrink-0 overflow-hidden ">
-            <Image
-              src="/food/food_01.png"
-              alt="얼큰한 김치찌개 리뷰 이미지"
-              fill
-              className="object-cover"
-            />
-          </div>
-          <div className="relative aspect-square w-28 shrink-0 overflow-hidden">
-            <Image
-              src="/food/food_01.png"
-              alt="얼큰한 김치찌개 리뷰 이미지"
-              fill
-              className="object-cover"
-            />
-          </div>
-          <div className="relative aspect-square w-28 shrink-0 overflow-hidden">
-            <Image
-              src="/food/food_01.png"
-              alt="얼큰한 김치찌개 리뷰 이미지"
-              fill
-              className="object-cover"
-            />
-          </div>
+          {topDishes.map((dish, index) => (
+            <div
+              key={`${dish.name}-${index}`}
+              className="relative aspect-square w-28 shrink-0 overflow-hidden"
+            >
+              <Image
+                src={dish.imageSrc}
+                alt={`${dish.name} 이미지`}
+                fill
+                sizes="112px"
+                unoptimized
+                className="object-cover"
+              />
+            </div>
+          ))}
         </section>
         {/* 주부 소개글 */}
         <article className="flex items-start mx-5 gap-2.5 self-stretch pt-5 pb-4">
           <img
-            src="/seller/seller1.png"
-            alt="김미숙 주부 프로필 이미지"
+            src={profileImage}
+            alt={`${sellerName} 주부 프로필 이미지`}
             className="h-15 w-15 flex-none rounded-full object-cover"
           />
 
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <header className="flex flex-col gap-0">
               <h3 className="text-paragraph-lg font-semibold text-gray-800">
-                김미숙 주부9단
+                {sellerName} 주부9단
               </h3>
 
               <div className="flex items-center gap-1 text-paragraph font-regular text-gray-700">
@@ -71,17 +70,18 @@ export default function SellerCard({ showDivider = true }: SellerCardProps) {
                     fill="#FF6155"
                   />
                 </svg>
-                <span className="text-eatda-orange">4.9</span>
-                <span className="text-gray-500 text-x-small">(329)</span>
+                <span className="text-eatda-orange">{rating.toFixed(1)}</span>
+                <span className="text-gray-500 text-x-small">
+                  ({reviewCount})
+                </span>
                 <span className="sr-only">
-                  평점 5점 만점에 4.9점, 리뷰 329개
+                  평점 5점 만점에 {rating.toFixed(1)}점, 리뷰 {reviewCount}개
                 </span>
               </div>
             </header>
 
             <p className="text-paragraph font-regular text-gray-600">
-              30년 동안 가족 밥상을 책임져 온 주부입니다. 아이들 키우며 매일 해
-              오던 집밥을 이제 이웃들과 나누고 싶어요.
+              {description}
             </p>
           </div>
         </article>

@@ -1,77 +1,133 @@
-"use client";
+'use client';
 
-import BottomFixedButton from "@/app/src/components/common/BottomFixedButton";
-import Header from "@/app/src/components/common/Header";
-import PurchaseProductItem from "@/app/src/components/ui/PurchaseProductItem";
-import { CartItemType, CartResponse } from "@/app/src/types";
-import { getAxios } from "@/lib/axios";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import dayjs from "dayjs";
-import "dayjs/locale/ko";
+import BottomFixedButton from '@/app/src/components/common/BottomFixedButton';
+import Header from '@/app/src/components/common/Header';
+import PurchaseProductItem from '@/app/src/components/ui/PurchaseProductItem';
+import { CartItemType, CartResponse, Product } from '@/app/src/types';
+import { getAxios } from '@/lib/axios';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
 
-dayjs.locale("ko");
+dayjs.locale('ko');
+
+interface DirectPurchaseData {
+  productId: number;
+  quantity: number;
+  totalAmount: number;
+}
 
 export default function CheckoutPageClient() {
+  const axios = getAxios();
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isProductInfoOpen, setIsProductInfoOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItemType[]>([]);
-  const [cost, setCost] = useState<CartResponse["cost"] | null>(null);
-  const searchParams = useSearchParams();
-  const isDirect = searchParams.get("direct") === "true";
+  const [cost, setCost] = useState<CartResponse['cost'] | null>(null);
+  const [directProduct, setDirectProduct] = useState<Product | null>(null);
+  const [directQuantity, setDirectQuantity] = useState(0);
+  const [directTotalAmount, setDirectTotalAmount] = useState(0);
 
-  const tomorrow = dayjs().add(1, "day");
-  const after_tomorrow = dayjs().add(2, "day");
+  const searchParams = useSearchParams();
+  const isDirect = searchParams.get('direct') === 'true';
+
+  const tomorrow = dayjs().add(1, 'day');
+  const after_tomorrow = dayjs().add(2, 'day');
 
   useEffect(() => {
-    const fetchCart = async () => {
-      const axios = getAxios();
-      const response = await axios.get<CartResponse>("/carts");
-      setCartItems(response.data.item);
-      setCost(response.data.cost);
+    const fetchData = async () => {
+      if (isDirect) {
+        const directPurchaseStr = localStorage.getItem('directPurchase');
+        if (!directPurchaseStr) {
+          console.log('상품 정보를 찾을 수 없습니다.');
+          router.push('/');
+          return;
+        }
+
+        const directPurchase: DirectPurchaseData =
+          JSON.parse(directPurchaseStr);
+
+        try {
+          const response = await axios.get<{ item: Product }>(
+            `/products/${directPurchase.productId}`
+          );
+
+          setDirectProduct(response.data.item);
+          setDirectQuantity(directPurchase.quantity);
+          setDirectTotalAmount(directPurchase.totalAmount);
+        } catch (error) {
+          console.error('상품 정보 로드 실패:', error);
+          alert('상품 정보를 불러올 수 없습니다.');
+          router.push('/');
+        }
+      } else {
+        try {
+          const response = await axios.get<CartResponse>('/carts');
+          setCartItems(response.data.item || []);
+          setCost(response.data.cost || { products: 0 });
+        } catch (error) {
+          console.error('장바구니 정보 로드 실패:', error);
+          alert(
+            '장바구니 정보를 불러올 수 없습니다. 로그인이 필요할 수 있습니다.'
+          );
+          router.push('/login'); // 또는 적절한 경로로
+        }
+      }
     };
-    fetchCart();
-  }, []);
+
+    fetchData();
+  }, [isDirect, router]);
 
   const handlePurchase = async () => {
     if (!selectedDate || !selectedTime) {
-      alert("픽업 날짜와 시간을 선택해주세요.");
+      alert('픽업 날짜와 시간을 선택해주세요.');
       return;
     }
 
     try {
-      const axios = getAxios();
-
       const pickupDateValue =
-        selectedDate === "tomorrow"
-          ? tomorrow.format("YYYY-MM-DD")
-          : after_tomorrow.format("YYYY-MM-DD");
+        selectedDate === 'tomorrow'
+          ? tomorrow.format('YYYY-MM-DD')
+          : after_tomorrow.format('YYYY-MM-DD');
 
-      const orderData = {
-        products: cartItems.map((item) => ({
-          _id: item.product._id,
-          quantity: item.quantity,
-        })),
-        extra: {
-          pickupDate: pickupDateValue,
-          pickupTime: selectedTime,
-        },
-      };
-      const response = await axios.post("/orders", orderData);
-      // 바로 구매인 경우에만 localStorage 정리
+      const orderData = isDirect
+        ? {
+            products: [
+              {
+                _id: directProduct!._id,
+                quantity: directQuantity,
+              },
+            ],
+            extra: {
+              pickupDate: pickupDateValue,
+              pickupTime: selectedTime,
+            },
+          }
+        : {
+            products: cartItems.map((item) => ({
+              _id: item.product._id,
+              quantity: item.quantity,
+            })),
+            extra: {
+              pickupDate: pickupDateValue,
+              pickupTime: selectedTime,
+            },
+          };
+
+      const response = await axios.post('/orders', orderData);
+
       if (isDirect) {
-        localStorage.removeItem("directPurchase");
+        localStorage.removeItem('directPurchase');
       } else {
-        // 장바구니에서 구매한 경우에만 장바구니 비우기
-        await axios.delete("/carts/cleanup");
+        await axios.delete('/carts/cleanup');
       }
 
       router.push(`/checkout/complete?orderId=${response.data.item._id}`);
     } catch (error) {
-      console.error("주문 실패:", error);
-      alert("주문에 실패했습니다. 다시 시도해주세요.");
+      console.error('주문 실패:', error);
+      alert('주문에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -83,7 +139,7 @@ export default function CheckoutPageClient() {
         <div>
           <button
             onClick={() => setIsProductInfoOpen(!isProductInfoOpen)}
-            className={`w-full flex justify-between items-center ${!isProductInfoOpen ? "pb-5 border-b-[0.5px] border-gray-600" : ""}`}
+            className={`w-full flex justify-between items-center ${!isProductInfoOpen ? 'pb-5 border-b-[0.5px] border-gray-600' : ''}`}
           >
             <p className="text-display-3 font-semibold">구매 상품 정보</p>
             <svg
@@ -93,7 +149,7 @@ export default function CheckoutPageClient() {
               viewBox="0 0 20 20"
               fill="none"
               className={`transition-transform ${
-                isProductInfoOpen ? "rotate-180" : ""
+                isProductInfoOpen ? 'rotate-180' : ''
               }`}
             >
               <path
@@ -108,16 +164,26 @@ export default function CheckoutPageClient() {
 
           {isProductInfoOpen && (
             <div className="space-y-4 pt-3 pb-3">
-              {cartItems.map((item) => (
-                <PurchaseProductItem
-                  key={item._id}
-                  imageSrc={item.product.image.path}
-                  dishName={item.product.name}
-                  chefName={item.product.seller.name}
-                  price={item.product.price}
-                  quantity={item.quantity}
-                />
-              ))}
+              {isDirect
+                ? directProduct && (
+                    <PurchaseProductItem
+                      imageSrc={directProduct.mainImages?.[0]?.path || ''}
+                      dishName={directProduct.name}
+                      chefName={directProduct.seller?.name || ''}
+                      price={directProduct.price}
+                      quantity={directQuantity}
+                    />
+                  )
+                : cartItems.map((item) => (
+                    <PurchaseProductItem
+                      key={item._id}
+                      imageSrc={item.product.image.path}
+                      dishName={item.product.name}
+                      chefName={item.product.seller.name}
+                      price={item.product.price}
+                      quantity={item.quantity}
+                    />
+                  ))}
             </div>
           )}
         </div>
@@ -157,29 +223,29 @@ export default function CheckoutPageClient() {
           </p>
           <div className="flex gap-2.5 w-full">
             <button
-              onClick={() => setSelectedDate("tomorrow")}
+              onClick={() => setSelectedDate('tomorrow')}
               className={`flex-1 py-4 px-5 border border-gray-300 rounded-lg transition-shadow ${
-                selectedDate === "tomorrow"
-                  ? "shadow-[inset_0_0_0_2px_#FF6155]"
-                  : ""
+                selectedDate === 'tomorrow'
+                  ? 'shadow-[inset_0_0_0_2px_#FF6155]'
+                  : ''
               }`}
             >
               <p className="text-paragraph font-semibold">내일</p>
               <p className="text-paragraph-sm">
-                {tomorrow.format("M월 D일 dddd")}
+                {tomorrow.format('M월 D일 dddd')}
               </p>
             </button>
             <button
-              onClick={() => setSelectedDate("after_tomorrow")}
+              onClick={() => setSelectedDate('after_tomorrow')}
               className={`flex-1 py-4 px-5 border border-gray-300 rounded-lg transition-shadow ${
-                selectedDate === "after_tomorrow"
-                  ? "shadow-[inset_0_0_0_2px_#FF6155]"
-                  : ""
+                selectedDate === 'after_tomorrow'
+                  ? 'shadow-[inset_0_0_0_2px_#FF6155]'
+                  : ''
               }`}
             >
               <p className="text-paragraph font-semibold">모레</p>
               <p className="text-paragraph-sm">
-                {after_tomorrow.format("M월 D일 dddd")}
+                {after_tomorrow.format('M월 D일 dddd')}
               </p>
             </button>
           </div>
@@ -192,31 +258,31 @@ export default function CheckoutPageClient() {
           </p>
           <div className="space-y-2">
             <button
-              onClick={() => setSelectedTime("9-12")}
+              onClick={() => setSelectedTime('9-12')}
               className={`w-full py-4 px-5 border border-gray-300 rounded-lg transition-shadow ${
-                selectedTime === "9-12"
-                  ? "shadow-[inset_0_0_0_2px_#FF6155]"
-                  : ""
+                selectedTime === '9-12'
+                  ? 'shadow-[inset_0_0_0_2px_#FF6155]'
+                  : ''
               }`}
             >
               9:00 - 12:00
             </button>
             <button
-              onClick={() => setSelectedTime("12-16")}
+              onClick={() => setSelectedTime('12-16')}
               className={`w-full py-4 px-5 border border-gray-300 rounded-lg transition-shadow ${
-                selectedTime === "12-16"
-                  ? "shadow-[inset_0_0_0_2px_#FF6155]"
-                  : ""
+                selectedTime === '12-16'
+                  ? 'shadow-[inset_0_0_0_2px_#FF6155]'
+                  : ''
               }`}
             >
               12:00 - 16:00
             </button>
             <button
-              onClick={() => setSelectedTime("16-20")}
+              onClick={() => setSelectedTime('16-20')}
               className={`w-full py-4 px-5 border border-gray-300 rounded-lg transition-shadow ${
-                selectedTime === "16-20"
-                  ? "shadow-[inset_0_0_0_2px_#FF6155]"
-                  : ""
+                selectedTime === '16-20'
+                  ? 'shadow-[inset_0_0_0_2px_#FF6155]'
+                  : ''
               }`}
             >
               16:00 - 20:00
@@ -229,13 +295,19 @@ export default function CheckoutPageClient() {
           <div className="flex justify-between">
             <p className="text-paragraph">상품 금액</p>
             <p className="text-paragraph text-gray-600">
-              {cost?.products.toLocaleString() || "0"}원
+              {isDirect
+                ? (directTotalAmount ?? 0).toLocaleString()
+                : (cost?.products ?? 0).toLocaleString()}
+              원
             </p>
           </div>
           <div className="flex justify-between">
             <p className="text-paragraph">수량</p>
             <p className="text-paragraph text-gray-600">
-              {cartItems.reduce((sum, item) => sum + item.quantity, 0)}개
+              {isDirect
+                ? directQuantity
+                : cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+              개
             </p>
           </div>
           <div className="flex justify-between pb-1">
@@ -244,8 +316,11 @@ export default function CheckoutPageClient() {
           </div>
           <div className="flex justify-between border-t-[0.5px] border-gray-600 pt-4">
             <h2 className="text-paragraph-md font-semibold">총 결제 금액</h2>
-            <p className="text-paragraph-md font-semibold text-eatda-orange">
-              {cost?.total.toLocaleString() || "0"}원
+            <p className="text-paragraph text-gray-600">
+              {isDirect
+                ? (directTotalAmount ?? 0).toLocaleString()
+                : (cost?.products ?? 0).toLocaleString()}
+              원
             </p>
           </div>
         </div>

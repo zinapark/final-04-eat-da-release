@@ -28,7 +28,6 @@ export default function CartPageClient() {
     fetchCart();
   }, []);
 
-  // 수량 변경
   const handleQuantityChange = async (cartId: number, newQuantity: number) => {
     try {
       const axios = getAxios();
@@ -39,7 +38,6 @@ export default function CartPageClient() {
     }
   };
 
-  // 아이템 삭제
   const handleRemoveItem = async (cartId: number) => {
     try {
       const axios = getAxios();

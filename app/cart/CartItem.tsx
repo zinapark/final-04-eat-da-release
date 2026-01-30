@@ -40,7 +40,7 @@ export default function CartItem({
           width={70}
           height={70}
           alt={productName}
-          className="rounded-lg object-cover"
+          className="rounded-lg object-cover w-17.5 h-17.5"
         />
         <div className="flex-1 flex flex-col gap-0.5 mt-1">
           <div className="flex justify-between items-start">

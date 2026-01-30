@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import BanchanCard from "@/app/mypage/banchan/BanchanCard";
-import { BanchanItem } from "@/app/mypage/banchan/BanchanData";
-import { getAxios } from "@/lib/axios";
+import { useEffect, useState } from 'react';
+import BanchanCard from '@/app/mypage/banchan/BanchanCard';
+import { BanchanItem } from '@/app/mypage/banchan/BanchanData';
+import { getAxios } from '@/lib/axios';
 
 export default function BanchanManagementClient() {
   const [items, setItems] = useState<BanchanItem[]>([]);
@@ -13,13 +13,13 @@ export default function BanchanManagementClient() {
     const fetchProducts = async () => {
       try {
         const axios = getAxios();
-        const response = await axios.get("/seller/products");
+        const response = await axios.get('/seller/products');
 
         if (response.data.ok) {
           setItems(response.data.item || []);
         }
       } catch (error) {
-        console.error("반찬 목록 조회 실패:", error);
+        console.error('반찬 목록 조회 실패:', error);
       } finally {
         setLoading(false);
       }
@@ -38,7 +38,7 @@ export default function BanchanManagementClient() {
 
   return (
     <>
-      <section className="px-5 mt-15 mb-24 flex flex-1 flex-col gap-5 min-h-[calc(100vh-10rem)]">
+      <section className="px-5 mt-15 mb-24 flex flex-1 flex-col min-h-[calc(100vh-10rem)]">
         <p className="text-display-3 font-semibold text-gray-800">
           등록된 반찬 ({items.length})
         </p>

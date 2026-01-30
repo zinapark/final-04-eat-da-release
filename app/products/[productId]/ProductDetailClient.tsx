@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import BottomFixedButton from "@/app/src/components/common/BottomFixedButton";
-import CartPopup from "@/app/cart/CartPopup";
-import { CartItem } from "@/app/src/types";
-import { getAxios } from "@/lib/axios";
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import BottomFixedButton from '@/app/src/components/common/BottomFixedButton';
+import CartPopup from '@/app/cart/CartPopup';
+import { CartItem } from '@/app/src/types';
+import { getAxios } from '@/lib/axios';
+import { useRouter } from 'next/navigation';
 
 interface ProductDetailClientProps {
   product: {
@@ -28,7 +28,7 @@ export default function ProductDetailClient({
       name: product.name,
       price: product.price,
       quantity: 1,
-      image: product.mainImages?.[0]?.path || "/food1.png",
+      image: product.mainImages?.[0]?.path || '/food1.png',
     },
   ]);
 
@@ -53,26 +53,32 @@ export default function ProductDetailClient({
       const axios = getAxios();
 
       for (const item of items) {
-        await axios.post("/carts", {
+        await axios.post('/carts', {
           product_id: Number(item.id),
           quantity: item.quantity,
         });
       }
 
-      router.push("/cart");
+      router.push('/cart');
     } catch (error) {
-      console.error("장바구니 담기 실패:", error);
+      console.error('장바구니 담기 실패:', error);
     }
   };
 
   const handleBuyNow = () => {
+    const totalAmount = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
     const directPurchase = {
       productId: product._id,
       quantity: items[0].quantity,
+      totalAmount: totalAmount,
     };
 
-    localStorage.setItem("directPurchase", JSON.stringify(directPurchase));
-    router.push("/checkout?direct=true");
+    localStorage.setItem('directPurchase', JSON.stringify(directPurchase));
+    router.push('/checkout?direct=true');
   };
   return (
     <>

@@ -9,7 +9,7 @@ interface BanchanCardProps {
 // 반찬 상태 계산 함수
 const getBanchanStatus = (item: BanchanItem): string => {
   if (item.show === false) return "판매중지";
-  if (item.quantity === 0) return "품절";
+  if (item.quantity - item.buyQuantity <= 0) return "품절";
   return "판매중";
 };
 
@@ -58,7 +58,7 @@ export default function BanchanCard({ item }: BanchanCardProps) {
 
         {/* 수량 정보 */}
         <p className="text-display-1 text-gray-600">
-          최대 주문 수량 : {item.quantity}개
+          남은 수량 : {item.quantity - item.buyQuantity}개
         </p>
       </div>
     </Link>

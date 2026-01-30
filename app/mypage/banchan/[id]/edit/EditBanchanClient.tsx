@@ -1,56 +1,80 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AddImage from "@/app/src/components/ui/AddImage";
 import ConfirmModal from "@/app/src/components/ui/ConfirmModal";
 import FormField from "@/app/src/components/ui/FormField";
 import CategoryDropdown from "@/app/src/components/ui/CategoryDropdown";
-import { uploadImages, updateBanchan } from "@/lib/banchan";
+import {
+  uploadImages,
+  updateBanchan,
+  fetchBanchanForEdit,
+  validateBanchanForm,
+} from "@/lib/banchan";
 import type {
   BanchanFormData,
   EditBanchanClientProps,
 } from "@/app/src/types/banchan";
 
-export default function EditBanchanClient({
-  initialData,
-}: EditBanchanClientProps) {
+export default function EditBanchanClient({ id }: EditBanchanClientProps) {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isOnSale, setIsOnSale] = useState(initialData.show);
+  const [isOnSale, setIsOnSale] = useState(true);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [existingImages, setExistingImages] = useState<string[]>(
-    initialData.images,
-  );
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [initialImages, setInitialImages] = useState<string[]>([]);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [buyQuantity, setBuyQuantity] = useState(0);
   const [formData, setFormData] = useState<BanchanFormData>({
-    name: initialData.name,
-    category: initialData.category,
-    price: initialData.price,
-    description: initialData.description,
-    ingredients: initialData.ingredients,
-    servings: initialData.servings,
-    quantity: initialData.quantity,
-    pickupPlace: initialData.pickupPlace,
+    name: "",
+    category: "",
+    price: "",
+    description: "",
+    ingredients: "",
+    servings: "",
+    quantity: "",
+    pickupPlace: "",
   });
+
+  useEffect(() => {
+    fetchBanchanForEdit(id)
+      .then((data) => {
+        setFormData({
+          name: data.name,
+          category: data.category,
+          price: data.price,
+          description: data.description,
+          ingredients: data.ingredients,
+          servings: data.servings,
+          quantity: data.quantity,
+          pickupPlace: data.pickupPlace,
+        });
+        setBuyQuantity(data.buyQuantity);
+        setIsOnSale(data.show);
+        setExistingImages(data.images);
+        setInitialImages(data.images);
+      })
+      .catch((error) => {
+        console.error("반찬 정보 조회 실패:", error);
+        alert("반찬 정보를 불러오지 못했습니다.");
+        router.back();
+      })
+      .finally(() => setLoading(false));
+  }, [id, router]);
 
   const handleBlur = (field: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
-  // 필드별 에러 메시지
   const getError = (field: string): string | undefined => {
     if (!touched[field]) return undefined;
-    const value = formData[field as keyof BanchanFormData];
-    if (!value.trim()) return "필수 입력 사항입니다";
-    if (field === "description" && value.trim().length < 10) {
-      return "최소 10자 이상 입력해주세요";
-    }
-    return undefined;
+    const errors = validateBanchanForm(formData);
+    return errors[field];
   };
 
-  // 입력값 변경 핸들러
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -60,17 +84,14 @@ export default function EditBanchanClient({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 이미지 변경 핸들러
   const handleImageChange = (images: string[], files: File[]) => {
     setImageFiles(files);
-    // 기존 이미지 중 남아있는 것만 유지
     const newExistingImages = images.filter((img) =>
-      initialData.images.includes(img),
+      initialImages.includes(img),
     );
     setExistingImages(newExistingImages);
   };
 
-  // 수정 버튼
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -82,32 +103,26 @@ export default function EditBanchanClient({
     setTouched(allTouched);
 
     // 유효성 검사
-    const hasEmpty = Object.entries(formData).some(
-      ([, value]) => !value.trim(),
-    );
-    if (hasEmpty) return;
-    if (formData.description.trim().length < 10) return;
+    const errors = validateBanchanForm(formData);
+    if (Object.keys(errors).length > 0) return;
 
     setIsSubmitting(true);
 
     try {
-      // 새 이미지 업로드
       const newUploadedImages = await uploadImages(imageFiles);
 
-      // 기존 이미지 + 새 이미지 합치기
       const existingImageObjects = existingImages.map((path) => ({
         path,
         name: path.split("/").pop() || "",
       }));
       const mainImages = [...existingImageObjects, ...newUploadedImages];
 
-      // 반찬 수정
       const success = await updateBanchan({
-        id: initialData.id,
+        id: Number(id),
         name: formData.name,
         category: formData.category,
         price: Number(formData.price.replace(/,/g, "")),
-        quantity: Number(formData.quantity),
+        quantity: Number(formData.quantity) + buyQuantity,
         description: formData.description,
         ingredients: formData.ingredients,
         servings: formData.servings,
@@ -132,11 +147,18 @@ export default function EditBanchanClient({
     }
   };
 
-  // 모달 확인 버튼
   const handleModalConfirm = () => {
     setShowModal(false);
     router.push("/mypage/banchan");
   };
+
+  if (loading) {
+    return (
+      <div className="flex mt-16 items-center justify-center min-h-[calc(100vh-4rem)]">
+        <p className="text-gray-500">반찬 정보를 불러오는 중...</p>
+      </div>
+    );
+  }
 
   return (
     <form
@@ -190,7 +212,7 @@ export default function EditBanchanClient({
 
           {/* 반찬 이미지 등록 */}
           <AddImage
-            initialImages={initialData.images}
+            initialImages={initialImages}
             onChange={handleImageChange}
             maxImages={5}
           />
