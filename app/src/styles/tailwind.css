@@ -1,0 +1,270 @@
+@import "tailwindcss";
+
+/* =========================
+   THEME TOKENS
+========================= */
+@theme {
+  /* colors */
+  --color-eatda-orange: #ff6155;
+  --color-gray-800: #121212;
+  --color-gray-700: #353e5c;
+  --color-gray-600: #6d758f;
+  --color-gray-500: #a1a7bb;
+  --color-gray-400: #d7dbe7;
+  --color-gray-300: #edeff5;
+  --color-gray-200: #f8faff;
+  --color-white: #ffffff;
+
+  /* font */
+  --font-sans:
+    "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR",
+    sans-serif;
+
+  /* weights */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-extrabold: 800;
+
+  /* display */
+  --text-display-12: 98px;
+  --leading-display-12: 98px;
+  --text-display-11: 72px;
+  --leading-display-11: 72px;
+  --text-display-10: 60px;
+  --leading-display-10: 60px;
+  --text-display-9: 48px;
+  --leading-display-9: 48px;
+  --text-display-8: 36px;
+  --leading-display-8: 40px;
+  --text-display-7: 30px;
+  --leading-display-7: 36px;
+  --text-display-6: 24px;
+  --leading-display-6: 32px;
+  --text-display-5: 20px;
+  --leading-display-5: 28px;
+  --text-display-4: 18px;
+  --leading-display-4: 24px;
+  --text-display-3: 16px;
+  --leading-display-3: 22px;
+  --text-display-2: 14px;
+  --leading-display-2: 20px;
+  --text-display-1: 12px;
+  --leading-display-1: 18px;
+
+  /* paragraph */
+  --text-paragraph-lg: 18px;
+  --leading-paragraph-lg: 28px;
+  --text-paragraph-md: 16px;
+  --leading-paragraph-md: 24px;
+  --text-paragraph: 14px;
+  --leading-paragraph: 22px;
+  --text-paragraph-sm: 12px;
+  --leading-paragraph-sm: 18px;
+
+  /* x-small */
+  --text-x-small: 10px;
+  --leading-x-small: 14px;
+}
+
+/* =========================
+   BASE
+========================= */
+@layer base {
+  body {
+    font-family: var(--font-inter), var(--font-sans);
+  }
+}
+
+/* =========================
+   UTILITIES
+========================= */
+@layer utilities {
+  /* font weights */
+  .font-light {
+    font-weight: var(--font-weight-light);
+  }
+  .font-regular {
+    font-weight: var(--font-weight-regular);
+  }
+  .font-medium {
+    font-weight: var(--font-weight-medium);
+  }
+  .font-semibold {
+    font-weight: var(--font-weight-semibold);
+  }
+  .font-extrabold {
+    font-weight: var(--font-weight-extrabold);
+  }
+
+  /* typography */
+  .text-display-12 {
+    font-size: var(--text-display-12);
+    line-height: var(--leading-display-12);
+  }
+  .text-display-11 {
+    font-size: var(--text-display-11);
+    line-height: var(--leading-display-11);
+  }
+  .text-display-10 {
+    font-size: var(--text-display-10);
+    line-height: var(--leading-display-10);
+  }
+  .text-display-9 {
+    font-size: var(--text-display-9);
+    line-height: var(--leading-display-9);
+  }
+  .text-display-8 {
+    font-size: var(--text-display-8);
+    line-height: var(--leading-display-8);
+  }
+  .text-display-7 {
+    font-size: var(--text-display-7);
+    line-height: var(--leading-display-7);
+  }
+  .text-display-6 {
+    font-size: var(--text-display-6);
+    line-height: var(--leading-display-6);
+  }
+  .text-display-5 {
+    font-size: var(--text-display-5);
+    line-height: var(--leading-display-5);
+  }
+  .text-display-4 {
+    font-size: var(--text-display-4);
+    line-height: var(--leading-display-4);
+  }
+  .text-display-3 {
+    font-size: var(--text-display-3);
+    line-height: var(--leading-display-3);
+  }
+  .text-display-2 {
+    font-size: var(--text-display-2);
+    line-height: var(--leading-display-2);
+  }
+  .text-display-1 {
+    font-size: var(--text-display-1);
+    line-height: var(--leading-display-1);
+  }
+
+  .text-paragraph-lg {
+    font-size: var(--text-paragraph-lg);
+    line-height: var(--leading-paragraph-lg);
+  }
+  .text-paragraph-md {
+    font-size: var(--text-paragraph-md);
+    line-height: var(--leading-paragraph-md);
+  }
+  .text-paragraph {
+    font-size: var(--text-paragraph);
+    line-height: var(--leading-paragraph);
+  }
+  .text-paragraph-sm {
+    font-size: var(--text-paragraph-sm);
+    line-height: var(--leading-paragraph-sm);
+  }
+  .text-x-small {
+    font-size: var(--text-x-small);
+    line-height: var(--leading-x-small);
+  }
+
+  /* text color */
+  .text-eatda-orange {
+    color: var(--color-eatda-orange);
+  }
+  .text-gray-800 {
+    color: var(--color-gray-800);
+  }
+  .text-gray-700 {
+    color: var(--color-gray-700);
+  }
+  .text-gray-600 {
+    color: var(--color-gray-600);
+  }
+  .text-gray-500 {
+    color: var(--color-gray-500);
+  }
+  .text-gray-400 {
+    color: var(--color-gray-400);
+  }
+  .text-gray-300 {
+    color: var(--color-gray-300);
+  }
+  .text-gray-200 {
+    color: var(--color-gray-200);
+  }
+  .text-white {
+    color: var(--color-white);
+  }
+
+  /* background color */
+  .bg-eatda-orange {
+    background-color: var(--color-eatda-orange);
+  }
+  .bg-gray-800 {
+    background-color: var(--color-gray-800);
+  }
+  .bg-gray-700 {
+    background-color: var(--color-gray-700);
+  }
+  .bg-gray-600 {
+    background-color: var(--color-gray-600);
+  }
+  .bg-gray-500 {
+    background-color: var(--color-gray-500);
+  }
+  .bg-gray-400 {
+    background-color: var(--color-gray-400);
+  }
+  .bg-gray-300 {
+    background-color: var(--color-gray-300);
+  }
+  .bg-gray-200 {
+    background-color: var(--color-gray-200);
+  }
+  .bg-white {
+    background-color: var(--color-white);
+  }
+
+  /* border color */
+  .border-eatda-orange {
+    border-color: var(--color-eatda-orange);
+  }
+  .border-gray-800 {
+    border-color: var(--color-gray-800);
+  }
+  .border-gray-700 {
+    border-color: var(--color-gray-700);
+  }
+  .border-gray-600 {
+    border-color: var(--color-gray-600);
+  }
+  .border-gray-500 {
+    border-color: var(--color-gray-500);
+  }
+  .border-gray-400 {
+    border-color: var(--color-gray-400);
+  }
+  .border-gray-300 {
+    border-color: var(--color-gray-300);
+  }
+  .border-gray-200 {
+    border-color: var(--color-gray-200);
+  }
+  .border-white {
+    border-color: var(--color-white);
+  }
+
+  /* 스크롤바 숨기기 (기능은 유지) */
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE, Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+  }
+
+}
+
