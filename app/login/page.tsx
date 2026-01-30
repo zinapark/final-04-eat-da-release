@@ -1,6 +1,7 @@
 import Header from '@/app/src/components/common/Header';
 import LoginForm from './LoginForm';
 import BottomFixedButton from '@/app/src/components/common/BottomFixedButton';
+import { Suspense } from 'react';
 
 export default function LoginPage() {
   return (
@@ -9,7 +10,9 @@ export default function LoginPage() {
       <div className="h-[60px]"></div>
       <div className="flex-1 px-5 py-8 overflow-y-auto pb-32">
         <div className="max-w-md mx-auto">
-          <LoginForm />
+          <Suspense fallback={<div className="text-center text-gray-600">로딩 중...</div>}>
+            <LoginForm />
+          </Suspense>
         </div>
       </div>
       <BottomFixedButton as="button" formId="loginForm">
