@@ -1,85 +1,86 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import BottomFixedButton from "@/app/src/components/common/BottomFixedButton";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import BottomFixedButton from '@/app/src/components/common/BottomFixedButton';
+import Header from '@/app/src/components/common/Header';
 
 // 더미 사용자 데이터
 const defaultUserData = {
-  name: "박주부",
-  email: "jubu@gmail.com",
-  phone: "010-0000-0000",
-  address: "서울특별시 강남구 논현동",
-  type: "individual" as "individual" | "business",
+  name: '박주부',
+  email: 'jubu@gmail.com',
+  phone: '010-0000-0000',
+  address: '서울특별시 강남구 논현동',
+  type: 'individual' as 'individual' | 'business',
 };
 
 export default function AccountPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: defaultUserData.email,
-    password: "",
-    confirmPassword: "",
+    password: '',
+    confirmPassword: '',
     phone: defaultUserData.phone,
     address: defaultUserData.address,
   });
   const [errors, setErrors] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    phone: "",
-    address: "",
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phone: '',
+    address: '',
   });
 
   const validateEmail = (value: string) => {
-    if (!value) return "이메일을 입력해주세요.";
+    if (!value) return '이메일을 입력해주세요.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
-      return "올바른 이메일 형식이 아닙니다.";
-    return "";
+      return '올바른 이메일 형식이 아닙니다.';
+    return '';
   };
 
   const validatePassword = (value: string) => {
     // 비밀번호는 선택 사항 (변경 시에만 입력)
-    if (!value) return "";
-    if (value.length < 8) return "비밀번호는 최소 8자 이상이어야 합니다.";
-    return "";
+    if (!value) return '';
+    if (value.length < 8) return '비밀번호는 최소 8자 이상이어야 합니다.';
+    return '';
   };
 
   const validateConfirmPassword = (value: string, password: string) => {
     // 비밀번호를 입력했을 때만 확인 검사
-    if (!password) return "";
-    if (!value) return "비밀번호 확인을 입력해주세요.";
-    if (value !== password) return "비밀번호가 일치하지 않습니다.";
-    return "";
+    if (!password) return '';
+    if (!value) return '비밀번호 확인을 입력해주세요.';
+    if (value !== password) return '비밀번호가 일치하지 않습니다.';
+    return '';
   };
 
   const validatePhone = (value: string) => {
-    if (!value) return "변경하실 전화번호를 입력해 주세요.";
-    return "";
+    if (!value) return '변경하실 전화번호를 입력해 주세요.';
+    return '';
   };
 
   const validateAddress = (value: string) => {
-    if (!value) return "변경하실 주소를 입력해 주세요.";
-    return "";
+    if (!value) return '변경하실 주소를 입력해 주세요.';
+    return '';
   };
 
   const handleBlur = (field: string) => {
-    let error = "";
+    let error = '';
     const value = formData[field as keyof typeof formData];
 
     switch (field) {
-      case "email":
+      case 'email':
         error = validateEmail(value);
         break;
-      case "password":
+      case 'password':
         error = validatePassword(value);
         break;
-      case "confirmPassword":
+      case 'confirmPassword':
         error = validateConfirmPassword(value, formData.password);
         break;
-      case "phone":
+      case 'phone':
         error = validatePhone(value);
         break;
-      case "address":
+      case 'address':
         error = validateAddress(value);
         break;
     }
@@ -91,7 +92,7 @@ export default function AccountPage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // 에러 메시지 초기화
     if (errors[field as keyof typeof errors]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 
@@ -103,7 +104,7 @@ export default function AccountPage() {
       password: validatePassword(formData.password),
       confirmPassword: validateConfirmPassword(
         formData.confirmPassword,
-        formData.password,
+        formData.password
       ),
       phone: validatePhone(formData.phone),
       address: validateAddress(formData.address),
@@ -111,10 +112,10 @@ export default function AccountPage() {
 
     setErrors(newErrors);
 
-    const hasErrors = Object.values(newErrors).some((error) => error !== "");
+    const hasErrors = Object.values(newErrors).some((error) => error !== '');
     if (!hasErrors) {
-      console.log("회원정보 수정:", formData);
-      router.push("/mypage");
+      console.log('회원정보 수정:', formData);
+      router.push('/mypage');
     }
   };
 
@@ -135,18 +136,18 @@ export default function AccountPage() {
               <div className="flex gap-3">
                 <div
                   className={`flex-1 py-3 text-sm font-medium rounded-lg text-center ${
-                    defaultUserData.type === "individual"
-                      ? "bg-eatda-orange text-white"
-                      : "bg-gray-100 text-gray-600"
+                    defaultUserData.type === 'individual'
+                      ? 'bg-eatda-orange text-white'
+                      : 'bg-gray-100 text-gray-600'
                   }`}
                 >
                   자취생
                 </div>
                 <div
                   className={`flex-1 py-3 text-sm font-medium rounded-lg text-center ${
-                    defaultUserData.type === "business"
-                      ? "bg-eatda-orange text-white"
-                      : "bg-gray-100 text-gray-600"
+                    defaultUserData.type === 'business'
+                      ? 'bg-eatda-orange text-white'
+                      : 'bg-gray-100 text-gray-600'
                   }`}
                 >
                   주부
@@ -181,8 +182,8 @@ export default function AccountPage() {
               <input
                 type="email"
                 value={formData.email}
-                onChange={(e) => handleChange("email", e.target.value)}
-                onBlur={() => handleBlur("email")}
+                onChange={(e) => handleChange('email', e.target.value)}
+                onBlur={() => handleBlur('email')}
                 placeholder="example@youremail.com"
                 className="w-full py-3 border-0 border-b border-gray-400 text-gray-800 text-display-2 focus:outline-none placeholder:text-gray-600 placeholder:text-display-2"
               />
@@ -200,8 +201,8 @@ export default function AccountPage() {
                 <input
                   type="password"
                   value={formData.password}
-                  onChange={(e) => handleChange("password", e.target.value)}
-                  onBlur={() => handleBlur("password")}
+                  onChange={(e) => handleChange('password', e.target.value)}
+                  onBlur={() => handleBlur('password')}
                   placeholder="변경하실 비밀번호를 입력하세요"
                   className="w-full py-3 border-0 border-b border-gray-400 text-gray-800 text-display-2 focus:outline-none placeholder:text-gray-600 placeholder:text-display-2"
                 />
@@ -218,9 +219,9 @@ export default function AccountPage() {
                   type="password"
                   value={formData.confirmPassword}
                   onChange={(e) =>
-                    handleChange("confirmPassword", e.target.value)
+                    handleChange('confirmPassword', e.target.value)
                   }
-                  onBlur={() => handleBlur("confirmPassword")}
+                  onBlur={() => handleBlur('confirmPassword')}
                   placeholder="변경하실 비밀번호를 입력하세요"
                   className="w-full py-3 border-0 border-b border-gray-400 text-gray-800 text-display-2 focus:outline-none placeholder:text-gray-600 placeholder:text-display-2"
                 />
@@ -239,8 +240,8 @@ export default function AccountPage() {
               <input
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => handleChange("phone", e.target.value)}
-                onBlur={() => handleBlur("phone")}
+                onChange={(e) => handleChange('phone', e.target.value)}
+                onBlur={() => handleBlur('phone')}
                 placeholder="010-0000-0000"
                 className="w-full py-3 border-0 border-b border-gray-400 text-gray-800 text-display-2 focus:outline-none placeholder:text-gray-600 placeholder:text-display-2"
               />
@@ -257,8 +258,8 @@ export default function AccountPage() {
               <input
                 type="text"
                 value={formData.address}
-                onChange={(e) => handleChange("address", e.target.value)}
-                onBlur={() => handleBlur("address")}
+                onChange={(e) => handleChange('address', e.target.value)}
+                onBlur={() => handleBlur('address')}
                 placeholder="서울특별시 강남구 도곡동"
                 className="w-full py-3 border-0 border-b border-gray-400 text-gray-800 text-display-2 focus:outline-none placeholder:text-gray-600 placeholder:text-display-2"
               />
