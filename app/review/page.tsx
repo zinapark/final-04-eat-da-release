@@ -131,9 +131,9 @@ export default function ReviewManagementPage() {
       const reviews = await fetchMyReviews();
 
       // seller_name이 없는 리뷰는 상품 정보에서 가져오기
-      const missingIds = [...new Set(reviews.filter((r: ReviewItem) => !r.product?.seller_name).map((r: ReviewItem) => r.product?._id).filter(Boolean))];
+      const missingIds = [...new Set(reviews.filter((r: ReviewItem) => !r.product?.seller_name).map((r: ReviewItem) => r.product?._id).filter(Boolean))] as number[];
       if (missingIds.length > 0) {
-        const productDetails = await Promise.all(missingIds.map((id: number) => fetchProduct(id).catch(() => null)));
+        const productDetails = await Promise.all(missingIds.map((id) => fetchProduct(id).catch(() => null)));
         const sellerMap = new Map<number, string>();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         productDetails.forEach((p: any, idx: number) => {
