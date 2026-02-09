@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface IconProps {
   isActive: boolean;
@@ -14,7 +14,7 @@ function HomeIcon({ isActive }: IconProps) {
       width="20"
       height="20"
       viewBox="0 0 20 20"
-      className={isActive ? "text-eatda-orange" : "text-gray-600"}
+      className={isActive ? 'text-eatda-orange' : 'text-gray-600'}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -32,7 +32,7 @@ function DishIcon({ isActive }: IconProps) {
       width="20"
       height="20"
       viewBox="0 0 20 20"
-      className={isActive ? "text-eatda-orange" : "text-gray-600"}
+      className={isActive ? 'text-eatda-orange' : 'text-gray-600'}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -55,7 +55,7 @@ function ApronIcon({ isActive }: IconProps) {
       width="20"
       height="22.5"
       viewBox="0 0 16 18"
-      className={isActive ? "text-eatda-orange" : "text-gray-600"}
+      className={isActive ? 'text-eatda-orange' : 'text-gray-600'}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -75,7 +75,7 @@ function HeartIcon({ isActive }: IconProps) {
       width="20"
       height="20"
       viewBox="0 0 20 20"
-      className={isActive ? "text-eatda-orange" : "text-gray-600"}
+      className={isActive ? 'text-eatda-orange' : 'text-gray-600'}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -102,7 +102,7 @@ function UserIcon({ isActive }: IconProps) {
       width="20"
       height="20"
       viewBox="0 0 20 20"
-      className={isActive ? "text-eatda-orange" : "text-gray-600"}
+      className={isActive ? 'text-eatda-orange' : 'text-gray-600'}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -124,28 +124,28 @@ function UserIcon({ isActive }: IconProps) {
 
 const NAV_ITEMS = [
   {
-    label: "홈",
-    href: "/home",
+    label: '홈',
+    href: '/home',
     icon: HomeIcon,
   },
   {
-    label: "반찬",
-    href: "/products",
+    label: '반찬',
+    href: '/products',
     icon: DishIcon,
   },
   {
-    label: "주부",
-    href: "/sellers",
+    label: '주부',
+    href: '/sellers',
     icon: ApronIcon,
   },
   {
-    label: "찜",
-    href: "/wishlist",
+    label: '찜',
+    href: '/wishlist',
     icon: HeartIcon,
   },
   {
-    label: "마이페이지",
-    href: "/mypage",
+    label: '마이페이지',
+    href: '/mypage',
     icon: UserIcon,
   },
 ];
@@ -157,40 +157,42 @@ export default function BottomNavigation() {
     <nav
       className="
         fixed bottom-0 left-0 right-0 z-50
-        h-16
+        
         bg-gray-200/90
         backdrop-blur
       "
       aria-label="하단 네비게이션"
     >
-      <ul className="flex h-full items-center justify-around">
-        {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
+      <div className="w-full max-w-[744px] min-w-[390px] mx-auto h-16">
+        <ul className="flex h-full items-center justify-around">
+          {NAV_ITEMS.map((item) => {
+            const isActive = pathname === item.href;
+            const Icon = item.icon;
 
-          return (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                aria-current={isActive ? "page" : undefined}
-                className="flex flex-col items-center gap-1"
-              >
-                <Icon isActive={isActive} />
-
-                <span
-                  className={`text-x-small ${
-                    isActive
-                      ? "text-eatda-orange font-semibold"
-                      : "text-gray-600"
-                  }`}
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  aria-current={isActive ? 'page' : undefined}
+                  className="flex flex-col items-center gap-1"
                 >
-                  {item.label}
-                </span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+                  <Icon isActive={isActive} />
+
+                  <span
+                    className={`text-x-small ${
+                      isActive
+                        ? 'text-eatda-orange font-semibold'
+                        : 'text-gray-600'
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </nav>
   );
 }

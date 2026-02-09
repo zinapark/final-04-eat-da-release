@@ -1,23 +1,12 @@
-"use client";
+'use client';
 
-import OrderProductItem from "@/app/src/components/ui/OrderProductItem";
-
-// 주문 상세 데이터 타입
-export interface OrderDetail {
-  orderNumber: string;
-  pickupLocation: string;
-  pickupTime: string;
-  totalPrice: number;
-  product: {
-    imageSrc: string;
-    dishName: string;
-    chefName: string;
-    price: number;
-  };
-}
+import type { PurchaseData } from '@/app/src/types';
+import OrderProductItem from '@/app/src/components/ui/OrderProductItem';
+import Image from 'next/image';
+import { formatPickupTime } from '@/app/mypage/orders/OrdersClient';
 
 interface PurchasesDetailCardProps {
-  order: OrderDetail;
+  order: PurchaseData;
 }
 
 export default function PurchasesDetailCard({
@@ -28,35 +17,28 @@ export default function PurchasesDetailCard({
       {/* 주문번호 */}
       <div className="flex border-b-[0.5px] border-gray-600 py-3 justify-between items-center text-display-2 text-gray-800 font-semibold">
         <p>주문번호</p>
-        <p>ORDER - {order.orderNumber}</p>
+        <p>ORDER - {order._id}</p>
       </div>
 
       {/* 상품 정보 */}
-      <OrderProductItem
-        imageSrc={order.product.imageSrc}
-        dishName={order.product.dishName}
-        chefName={order.product.chefName}
-        price={order.product.price}
-      />
+      {order.products.map((product) => (
+        <OrderProductItem
+          key={product._id}
+          imageSrc={product.image?.path}
+          dishName={product.name}
+          chefName={product.seller.name}
+          price={product.price}
+          quantity={product.quantity}
+        />
+      ))}
 
       {/* 픽업 장소 */}
       <div className="flex justify-between items-center">
         <p className="text-display-2 text-gray-800">픽업 장소</p>
         <div className="flex items-center gap-1">
-          <svg
-            width="12"
-            height="15"
-            viewBox="0 0 12 15"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M6 0C2.68629 0 0 2.68629 0 6C0 10.5 6 15 6 15C6 15 12 10.5 12 6C12 2.68629 9.31371 0 6 0ZM6 8.25C4.75736 8.25 3.75 7.24264 3.75 6C3.75 4.75736 4.75736 3.75 6 3.75C7.24264 3.75 8.25 4.75736 8.25 6C8.25 7.24264 7.24264 8.25 6 8.25Z"
-              fill="#FF6B35"
-            />
-          </svg>
+          <Image src="/Location.svg" alt="주소" width={16} height={16} />
           <p className="text-display-2 font-semibold text-gray-800">
-            {order.pickupLocation}
+            {order.products[0]?.extra?.pickupPlace}
           </p>
         </div>
       </div>
@@ -65,7 +47,8 @@ export default function PurchasesDetailCard({
       <div className="flex justify-between items-center border-b-[0.5px] border-gray-600">
         <p className="text-display-2 text-gray-800 mb-5">픽업 시간</p>
         <p className="text-display-2 font-semibold text-gray-800">
-          {order.pickupTime}
+          {/* 주문 관리 페이지에서 가져옴 */}
+          {formatPickupTime(order.extra?.pickupTime)}
         </p>
       </div>
 
@@ -75,7 +58,7 @@ export default function PurchasesDetailCard({
           총 결제 금액
         </p>
         <p className="text-display-2 font-semibold text-eatda-orange">
-          {order.totalPrice.toLocaleString()}원
+          {order.cost.total.toLocaleString()}원
         </p>
       </div>
     </div>

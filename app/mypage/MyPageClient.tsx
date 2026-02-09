@@ -1,12 +1,17 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { getTokenPayload } from "@/lib/axios";
-import { getUser, getCartItems, getBookmarkCount } from "@/lib/mypage";
-import useUserStore from "@/zustand/userStore";
+import Link from 'next/link';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { getTokenPayload } from '@/lib/axios';
+import { getUser, getCartItems, getBookmarkCount } from '@/lib/mypage';
+import useUserStore from '@/zustand/userStore';
+import { fetchSellerTier } from '@/lib/tier';
+import { getImageUrl } from '@/lib/review';
+import { MyPageSkeleton } from './loading';
+import { useSellerSocket } from '@/lib/socket/useSellerSocket';
+import OrderToast from '@/app/src/components/ui/OrderToast';
 
 type UserInfo = Awaited<ReturnType<typeof getUser>>;
 
@@ -15,18 +20,25 @@ export default function MyPageClient() {
   const loggedInUser = useUserStore((state) => state.user);
   const clearUser = useUserStore((state) => state.clearUser);
 
-  const handleLogout = () => {
-    clearUser();
-    router.replace("/login");
-  };
   const [user, setUser] = useState<UserInfo>(null);
   const [cartCount, setCartCount] = useState(0);
   const [bookmarkCount, setBookmarkCount] = useState(0);
+  const [tierLabel, setTierLabel] = useState('');
   const [loading, setLoading] = useState(true);
+
+  const handleLogout = () => {
+    clearUser();
+    router.replace('/login');
+  };
+
+  // 판매자일 때 소켓 알림 수신
+  const { toasts, removeToast } = useSellerSocket(
+    user?.type === 'seller' ? user._id : 0
+  );
 
   useEffect(() => {
     if (!loggedInUser) {
-      router.replace("/login?redirect=/mypage");
+      router.replace('/login?redirect=/mypage');
       return;
     }
 
@@ -46,6 +58,12 @@ export default function MyPageClient() {
       setUser(userData);
       setCartCount(cartItems.length);
       setBookmarkCount(bmCount);
+
+      if (userData?.type === 'seller') {
+        const { label } = await fetchSellerTier(tokenPayload._id);
+        setTierLabel(label);
+      }
+
       setLoading(false);
     };
 
@@ -57,33 +75,45 @@ export default function MyPageClient() {
   }
 
   if (loading) {
-    return (
-      <div className="px-5 mt-16 mb-24 flex flex-1 flex-col items-center justify-center min-h-[calc(100vh-10rem)]">
-        <p className="text-gray-600">로딩 중...</p>
-      </div>
-    );
+    return <MyPageSkeleton />;
   }
 
   if (!user) {
     return null;
   }
 
-  const isSeller = user.type === "seller";
+  const isSeller = user.type === 'seller';
+  const userImageSrc =
+    typeof user.image === 'string'
+      ? user.image
+      : user.image?.path
+        ? getImageUrl(user.image.path)
+        : '';
 
   return (
-    <div className="px-5 mt-15 mb-24 flex flex-1 flex-col gap-5 min-h-[calc(100vh-10rem)]">
+    <div className="px-5 mt-16 mb-24 flex flex-1 flex-col gap-5 min-h-[calc(100vh-10rem)]">
+      {/* 토스트 알림 (실시간) */}
+      {toasts.map((toast, i) => (
+        <OrderToast
+          key={i}
+          index={i}
+          items={toast.items}
+          onClose={() => removeToast(i)}
+        />
+      ))}
+
       {/* 프로필 섹션 */}
-      <section className="p-5 border border-gray-400 rounded-lg bg-gray-200">
+      <section className="p-5 border border-gray-300 rounded-lg bg-gray-200">
         <div className="flex items-start gap-2.5">
           {/* 프로필 이미지 */}
-          {user.image ? (
+          {userImageSrc ? (
             <Image
-              src={user.image}
+              src={userImageSrc}
               alt="프로필"
               width={60}
               height={60}
               className="w-15 h-15 rounded-full object-cover"
-              unoptimized={user.image.includes("dicebear.com")}
+              unoptimized={userImageSrc.includes('dicebear.com')}
             />
           ) : (
             <div className="w-15 h-15 rounded-full bg-gray-600"></div>
@@ -95,7 +125,11 @@ export default function MyPageClient() {
               <h2 className="text-display-3 font-semibold text-gray-800">
                 {user.name}
               </h2>
-              <span className="text-display-1 text-gray-600">주부 9단</span>
+              {tierLabel && (
+                <span className="text-display-1 text-gray-600">
+                  {tierLabel}
+                </span>
+              )}
             </div>
             <p className="text-display-2 text-gray-800">{user.email}</p>
             <div className="flex items-center mt-1">

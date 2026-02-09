@@ -1,5 +1,5 @@
-import { OrderProductItemProps } from "@/app/src/types";
-import Image from "next/image";
+import { OrderProductItemProps } from '@/app/src/types';
+import Image from 'next/image';
 
 export default function OrderProductItem({
   imageSrc,
@@ -14,7 +14,7 @@ export default function OrderProductItem({
         alt={dishName}
         width={70}
         height={70}
-        className="rounded-lg"
+        className="rounded-lg w-17 h-17"
       />
       <div className="flex flex-col gap-1">
         <p className="text-paragraph font-semibold">{dishName}</p>

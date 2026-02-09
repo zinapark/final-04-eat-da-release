@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import BanchanCard from '@/app/mypage/banchan/BanchanCard';
-import { BanchanItem } from '@/app/mypage/banchan/BanchanData';
 import { getAxios } from '@/lib/axios';
+import { BanchanItem } from '@/app/src/types';
+import { BanchanManagementSkeleton } from '@/app/mypage/banchan/loading';
 
 export default function BanchanManagementClient() {
   const [items, setItems] = useState<BanchanItem[]>([]);
@@ -29,11 +30,7 @@ export default function BanchanManagementClient() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="px-5 mt-15 mb-24 flex flex-1 flex-col items-center justify-center min-h-[calc(100vh-10rem)]">
-        <p className="text-gray-600">로딩 중...</p>
-      </div>
-    );
+    return <BanchanManagementSkeleton />;
   }
 
   return (

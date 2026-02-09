@@ -4,14 +4,18 @@ interface ConfirmModalProps {
   isOpen: boolean;
   title: string;
   description?: string;
+  confirmText?: string;
   onConfirm: () => void;
+  onCancel?: () => void;
 }
 
 export default function ConfirmModal({
   isOpen,
   title,
   description,
+  confirmText = "확인",
   onConfirm,
+  onCancel,
 }: ConfirmModalProps) {
   if (!isOpen) return null;
 
@@ -23,13 +27,32 @@ export default function ConfirmModal({
           {description && <p className="text-display-2">{description}</p>}
         </div>
 
-        <button
-          type="button"
-          onClick={onConfirm}
-          className="w-full py-3 rounded bg-eatda-orange text-white text-display-2 font-semibold hover:opacity-80"
-        >
-          확인
-        </button>
+        {onCancel ? (
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 py-3 rounded bg-gray-200 text-gray-800 text-display-2 font-semibold hover:opacity-80"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={onConfirm}
+              className="flex-1 py-3 rounded bg-eatda-orange text-white text-display-2 font-semibold hover:opacity-80"
+            >
+              {confirmText}
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="w-full py-3 rounded bg-eatda-orange text-white text-display-2 font-semibold hover:opacity-80"
+          >
+            {confirmText}
+          </button>
+        )}
       </div>
     </div>
   );

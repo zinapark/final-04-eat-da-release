@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Image from "next/image";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, Navigation } from "swiper/modules";
-import type { Swiper as SwiperType } from "swiper";
+import { useState } from 'react';
+import Image from 'next/image';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Pagination, Navigation } from 'swiper/modules';
+import type { Swiper as SwiperType } from 'swiper';
 
-import "swiper/css";
-import "swiper/css/pagination";
-import "swiper/css/navigation";
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 
 interface ProductImageSliderProps {
   images: string[];
@@ -24,7 +24,7 @@ export default function ProductImageSlider({
   };
 
   return (
-    <div className="relative w-97.5 h-97.5">
+    <div className="relative w-full h-dvw">
       <Swiper
         modules={[Pagination, Navigation]}
         spaceBetween={0}

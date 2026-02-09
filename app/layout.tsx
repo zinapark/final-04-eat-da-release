@@ -1,11 +1,11 @@
-import "./globals.css";
-import "./src/styles/tailwind.css";
-import { Inter } from "next/font/google";
+import './globals.css';
+import './src/styles/tailwind.css';
+import { Inter } from 'next/font/google';
 
 const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
 });
 
 export default function RootLayout({
@@ -15,7 +15,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={inter.variable}>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <div className="w-full max-w-[744px] min-w-[390px] mx-auto">
+          {children}
+        </div>
+      </body>
     </html>
   );
 }

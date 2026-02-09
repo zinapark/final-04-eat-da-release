@@ -1,3 +1,5 @@
+import { Product } from '@/app/src/types/product';
+
 export interface BookmarkProduct {
   _id: number;
   type: string;
@@ -5,17 +7,7 @@ export interface BookmarkProduct {
   target_id: number;
   memo?: string;
   createdAt: string;
-  product: {
-    _id: number;
-    name: string;
-    price: number;
-    mainImages?: { path: string; name: string }[];
-    seller?: { name?: string };
-    extra?: {
-      rating?: number;
-      replies?: number;
-    };
-  };
+  product: Product;
 }
 
 export interface HeartProps {
@@ -23,7 +15,7 @@ export interface HeartProps {
 }
 export interface WishButtonProps {
   initialWished?: boolean;
-  lineColor?: "black" | "white";
+  lineColor?: 'black' | 'white';
   size?: number;
   className?: string;
   onToggle?: (isWished: boolean) => void;

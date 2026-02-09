@@ -1,12 +1,10 @@
-"use client";
+'use client';
 
-import BottomNavigation from "@/app/src/components/common/BottomNavigation";
-import { useState } from "react";
-import * as ChannelService from "@channel.io/channel-web-sdk-loader";
-import { useEffect } from "react";
-import Image from "next/image";
+import BottomNavigation from '@/app/src/components/common/BottomNavigation';
+import { useState, useEffect } from 'react';
+import * as ChannelService from '@channel.io/channel-web-sdk-loader';
+import Image from 'next/image';
 
-ChannelService.loadScript();
 
 interface FAQ {
   question: string;
@@ -15,49 +13,49 @@ interface FAQ {
 
 const faqs: FAQ[] = [
   {
-    question: "반찬은 어떻게 주문하나요?",
+    question: '반찬은 어떻게 주문하나요?',
     answer:
       "원하는 반찬을 선택한 후 '구매하기' 버튼을 눌러 픽업 날짜와 시간을 선택하고 결제하시면 됩니다. 장바구니에 여러 반찬을 담아 한 번에 주문하실 수도 있습니다.",
   },
   {
-    question: "픽업은 어떻게 하나요?",
+    question: '픽업은 어떻게 하나요?',
     answer:
-      "주문 시 선택하신 날짜와 시간에 픽업 장소로 방문하시면 됩니다. 주문 확인 메시지를 보여주시면 반찬을 수령하실 수 있습니다.",
+      '주문 시 선택하신 날짜와 시간에 픽업 장소로 방문하시면 됩니다. 주문 확인 메시지를 보여주시면 반찬을 수령하실 수 있습니다.',
   },
   {
-    question: "환불은 어떻게 하나요?",
+    question: '환불은 어떻게 하나요?',
     answer:
-      "픽업 2시간 전까지 주문 내역에서 취소 가능하며, 결제하신 금액이 전액 환불됩니다. 그 이후에는 환불이 어려우니 양해 부탁드립니다.",
+      '픽업 2시간 전까지 주문 내역에서 취소 가능하며, 결제하신 금액이 전액 환불됩니다. 그 이후에는 환불이 어려우니 양해 부탁드립니다.',
   },
   {
-    question: "반찬은 어떻게 주문하나요?",
+    question: '반찬은 어떻게 주문하나요?',
     answer:
       "원하는 반찬을 선택한 후 '구매하기' 버튼을 눌러 픽업 날짜와 시간을 선택하고 결제하시면 됩니다. 장바구니에 여러 반찬을 담아 한 번에 주문하실 수도 있습니다.",
   },
   {
-    question: "픽업은 어떻게 하나요?",
+    question: '픽업은 어떻게 하나요?',
     answer:
-      "주문 시 선택하신 날짜와 시간에 픽업 장소로 방문하시면 됩니다. 주문 확인 메시지를 보여주시면 반찬을 수령하실 수 있습니다.",
+      '주문 시 선택하신 날짜와 시간에 픽업 장소로 방문하시면 됩니다. 주문 확인 메시지를 보여주시면 반찬을 수령하실 수 있습니다.',
   },
   {
-    question: "환불은 어떻게 하나요?",
+    question: '환불은 어떻게 하나요?',
     answer:
-      "픽업 2시간 전까지 주문 내역에서 취소 가능하며, 결제하신 금액이 전액 환불됩니다. 그 이후에는 환불이 어려우니 양해 부탁드립니다.",
+      '픽업 2시간 전까지 주문 내역에서 취소 가능하며, 결제하신 금액이 전액 환불됩니다. 그 이후에는 환불이 어려우니 양해 부탁드립니다.',
   },
   {
-    question: "반찬은 어떻게 주문하나요?",
+    question: '반찬은 어떻게 주문하나요?',
     answer:
       "원하는 반찬을 선택한 후 '구매하기' 버튼을 눌러 픽업 날짜와 시간을 선택하고 결제하시면 됩니다. 장바구니에 여러 반찬을 담아 한 번에 주문하실 수도 있습니다.",
   },
   {
-    question: "픽업은 어떻게 하나요?",
+    question: '픽업은 어떻게 하나요?',
     answer:
-      "주문 시 선택하신 날짜와 시간에 픽업 장소로 방문하시면 됩니다. 주문 확인 메시지를 보여주시면 반찬을 수령하실 수 있습니다.",
+      '주문 시 선택하신 날짜와 시간에 픽업 장소로 방문하시면 됩니다. 주문 확인 메시지를 보여주시면 반찬을 수령하실 수 있습니다.',
   },
   {
-    question: "환불은?",
+    question: '환불은?',
     answer:
-      "픽업 2시간 전까지 주문 내역에서 취소 가능하며, 결제하신 금액이 전액 환불됩니다. 그 이후에는 환불이 어려우니 양해 부탁드립니다.",
+      '픽업 2시간 전까지 주문 내역에서 취소 가능하며, 결제하신 금액이 전액 환불됩니다. 그 이후에는 환불이 어려우니 양해 부탁드립니다.',
   },
 ];
 
@@ -68,8 +66,9 @@ export default function SupportPageClient() {
     setOpenIndex(openIndex === index ? null : index);
   };
   useEffect(() => {
+    ChannelService.loadScript();
     ChannelService.boot({
-      pluginKey: "67502dfa-39a4-4d1e-8332-59d195da33a7",
+      pluginKey: '67502dfa-39a4-4d1e-8332-59d195da33a7',
       hideChannelButtonOnBoot: true,
     });
 
@@ -131,7 +130,7 @@ export default function SupportPageClient() {
                     viewBox="0 0 20 20"
                     fill="none"
                     className={`transition-transform ${
-                      openIndex === index ? "rotate-180" : ""
+                      openIndex === index ? 'rotate-180' : ''
                     }`}
                   >
                     <path
@@ -153,13 +152,15 @@ export default function SupportPageClient() {
           </div>
         </div>
       </div>
-      <button
-        type="button"
-        onClick={() => ChannelService.showMessenger()}
-        className="fixed bg-white bottom-20 right-5 z-50 w-12 h-12 rounded-2xl shadow flex items-center justify-center"
-      >
-        <Image src="/Message.svg" alt="채널톡 문의" width={28} height={28} />
-      </button>
+      <div className="fixed bottom-20 z-50 w-full max-w-186 left-1/2 -translate-x-1/2 pointer-events-none">
+        <button
+          type="button"
+          onClick={() => ChannelService.showMessenger()}
+          className="absolute right-5 min-[744px]:right-3 bottom-0 pointer-events-auto bg-white w-12 h-12 rounded-2xl shadow flex items-center justify-center"
+        >
+          <Image src="/Message.svg" alt="채널톡 문의" width={28} height={28} />
+        </button>
+      </div>
       <BottomNavigation />
     </>
   );

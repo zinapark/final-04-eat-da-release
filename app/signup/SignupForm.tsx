@@ -1,10 +1,13 @@
 'use client';
 
-import { useActionState, useEffect, useRef, useState } from 'react';
+import { startTransition, useActionState, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { signup, SignupState } from '@/actions/user';
+import useUserStore from '@/zustand/userStore';
 import ConfirmModal from '@/app/src/components/ui/ConfirmModal';
+import AddImage from '@/app/src/components/ui/AddImage';
+import { uploadImages } from '@/lib/banchan';
 
 type ClientErrors = {
   name?: string;
@@ -13,20 +16,59 @@ type ClientErrors = {
   confirmPassword?: string;
   phone?: string;
   address?: string;
+  detailAddress?: string;
   introduction?: string;
 };
 
 export default function SignupForm() {
   const [state, formAction, isPending] = useActionState<SignupState | null, FormData>(signup, null);
   const router = useRouter();
+  const setUser = useUserStore((state) => state.setUser);
   const [selectedType, setSelectedType] = useState<'user' | 'seller'>('user');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const [modalType, setModalType] = useState<'success' | 'error'>('success');
   const [clientErrors, setClientErrors] = useState<ClientErrors>({});
   const [passwordValue, setPasswordValue] = useState('');
+  const [confirmPasswordValue, setConfirmPasswordValue] = useState('');
   const [addressValue, setAddressValue] = useState('');
   const detailAddressRef = useRef<HTMLInputElement>(null);
+  const introductionRef = useRef<HTMLTextAreaElement>(null);
+  const [profileImageFiles, setProfileImageFiles] = useState<File[]>([]);
+  const [introductionLength, setIntroductionLength] = useState(0);
+  const [introductionRows, setIntroductionRows] = useState(2);
+
+  // 화면 너비에 따라 placeholder 줄 수 계산
+  const calculatePlaceholderRows = () => {
+    const textarea = introductionRef.current;
+    if (!textarea || textarea.value) return;
+
+    const placeholder = "요리를 시작하게 된 계기나 자신 있는 반찬 이야기를 적어주시면 좋아요. (100자 이상)";
+    const style = getComputedStyle(textarea);
+    const font = `${style.fontSize} ${style.fontFamily}`;
+
+    // canvas로 텍스트 너비 측정
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.font = font;
+    const textWidth = ctx.measureText(placeholder).width;
+    const textareaWidth = textarea.clientWidth - parseInt(style.paddingLeft) - parseInt(style.paddingRight);
+
+    const rows = textWidth > textareaWidth ? 2 : 1;
+    setIntroductionRows(rows);
+  };
+
+  useEffect(() => {
+    // 약간의 지연을 주어 DOM이 완전히 렌더링된 후 계산
+    const timer = setTimeout(calculatePlaceholderRows, 100);
+    window.addEventListener('resize', calculatePlaceholderRows);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', calculatePlaceholderRows);
+    };
+  }, [selectedType]);
 
   const openPostcode = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -59,11 +101,53 @@ export default function SignupForm() {
     if (state?.values?.address) {
       setAddressValue(state.values.address);
     }
+    if (state?.values?.introduction) {
+      setIntroductionLength(state.values.introduction.length);
+    }
   }, [state]);
 
-  const handleModalConfirm = () => {
+  const handleModalConfirm = async () => {
     setIsModalOpen(false);
-    if (modalType === 'success') {
+    if (modalType === 'success' && state?.item) {
+      const item = state.item;
+
+      // Zustand에 유저 정보 저장 (자동 로그인)
+      setUser({
+        _id: item._id,
+        email: item.email,
+        name: item.name,
+        type: item.type,
+        loginType: item.loginType,
+        image: item.image,
+        token: {
+          accessToken: item.token.accessToken,
+          refreshToken: item.token.refreshToken,
+        },
+      });
+
+      // 유저 주소를 API로 가져와서 localStorage에 저장
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/users/${item._id}/address`,
+          {
+            headers: {
+              'Authorization': `Bearer ${item.token.accessToken}`,
+              'Content-Type': 'application/json',
+              'Client-Id': process.env.NEXT_PUBLIC_CLIENT_ID || '',
+            },
+          }
+        );
+        const data = await res.json();
+        if (data.ok && data.item?.address) {
+          localStorage.setItem('user-address', data.item.address);
+        }
+      } catch (error) {
+        console.error('주소 정보 가져오기 실패:', error);
+      }
+
+      router.replace('/home');
+    } else if (modalType === 'success') {
+      // 자동 로그인 데이터가 없으면 로그인 페이지로
       router.push('/login');
     }
   };
@@ -94,6 +178,9 @@ export default function SignupForm() {
       case 'address':
         if (!value) error = '주소를 입력해주세요.';
         break;
+      case 'detailAddress':
+        if (!value) error = '상세주소를 입력해주세요.';
+        break;
       case 'introduction':
         if (!value) error = '자기소개를 입력해주세요.';
         else if (value.length < 100) error = '100자 이상 작성해주세요.';
@@ -107,10 +194,35 @@ export default function SignupForm() {
     setClientErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
+  const handleProfileImageChange = (_images: string[], files: File[]) => {
+    setProfileImageFiles(files);
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+
+    if (profileImageFiles.length > 0) {
+      try {
+        const uploaded = await uploadImages(profileImageFiles);
+        if (uploaded.length > 0) {
+          formData.set('profileImage', JSON.stringify(uploaded[0]));
+        }
+      } catch (error) {
+        console.error('프로필 이미지 업로드 실패:', error);
+      }
+    }
+
+    startTransition(() => {
+      formAction(formData);
+    });
+  };
+
   return (
     <>
       <Script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="lazyOnload" />
-      <form id="signupForm" action={formAction} noValidate className="flex flex-col gap-5">
+      <form id="signupForm" onSubmit={handleFormSubmit} noValidate className="flex flex-col gap-5">
         {/* 가입유형 */}
         <div>
           <label className="block text-display-3 font-semibold text-gray-800 mb-2">
@@ -195,6 +307,7 @@ export default function SignupForm() {
           <input
             type="password"
             name="password"
+            value={passwordValue}
             placeholder="안전한 비밀번호를 입력하세요"
             onBlur={(e) => handleBlur('password', e.target.value)}
             onChange={(e) => { setPasswordValue(e.target.value); clearError('password'); }}
@@ -216,9 +329,10 @@ export default function SignupForm() {
           <input
             type="password"
             name="confirmPassword"
+            value={confirmPasswordValue}
             placeholder="비밀번호를 한번 더 입력하세요"
             onBlur={(e) => handleBlur('confirmPassword', e.target.value)}
-            onChange={() => clearError('confirmPassword')}
+            onChange={(e) => { setConfirmPasswordValue(e.target.value); clearError('confirmPassword'); }}
             className="w-full py-3 border-0 border-b border-gray-400 focus:outline-none focus:border-gray-600 placeholder:text-gray-500 text-gray-800 text-display-2 placeholder:text-display-2"
           />
           {clientErrors.confirmPassword && (
@@ -274,15 +388,20 @@ export default function SignupForm() {
             type="text"
             name="detailAddress"
             ref={detailAddressRef}
-            defaultValue={state?.values?.address || ''}
+            defaultValue={state?.values?.detailAddress || ''}
             placeholder="상세주소를 입력하세요"
+            onBlur={(e) => handleBlur('detailAddress', e.target.value)}
+            onChange={() => clearError('detailAddress')}
             className="w-full py-3 border-0 border-b border-gray-400 focus:outline-none focus:border-gray-600 placeholder:text-gray-500 text-gray-800 text-display-2 placeholder:text-display-2"
           />
           <input type="hidden" name="address" value={addressValue} />
           {clientErrors.address && (
             <p className="text-eatda-orange text-x-small mt-1">{clientErrors.address}</p>
           )}
-          {!clientErrors.address && state?.ok === 0 && state.errors?.address && (
+          {clientErrors.detailAddress && !clientErrors.address && (
+            <p className="text-eatda-orange text-x-small mt-1">{clientErrors.detailAddress}</p>
+          )}
+          {!clientErrors.address && !clientErrors.detailAddress && state?.ok === 0 && state.errors?.address && (
             <p className="text-eatda-orange text-x-small mt-1">{state.errors.address.msg}</p>
           )}
         </div>
@@ -294,19 +413,27 @@ export default function SignupForm() {
               자기소개 <span className="text-eatda-orange">*</span>
             </label>
             <textarea
+              ref={introductionRef}
               name="introduction"
               defaultValue={state?.values?.introduction || ''}
               placeholder="요리를 시작하게 된 계기나 자신 있는 반찬 이야기를 적어주시면 좋아요. (100자 이상)"
-              className="w-full py-3 border-0 border-b border-gray-400 focus:outline-none focus:border-gray-600 placeholder:text-gray-500 text-gray-800 text-display-2 placeholder:text-display-2 resize-none overflow-hidden"
-              rows={2}
-              onBlur={(e) => handleBlur('introduction', e.target.value)}
-              onChange={() => clearError('introduction')}
+              className="w-full py-3 border-0 border-b border-gray-400 focus:outline-none focus:border-gray-600 placeholder:text-gray-500 focus:placeholder:text-transparent text-gray-800 text-display-2 placeholder:text-display-2 resize-none overflow-hidden"
+              rows={introductionRows}
+              onFocus={() => setIntroductionRows(1)}
+              onBlur={(e) => {
+                handleBlur('introduction', e.target.value);
+                if (!e.target.value) calculatePlaceholderRows();
+              }}
+              onChange={(e) => { setIntroductionLength(e.target.value.length); clearError('introduction'); }}
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
                 target.style.height = 'auto';
                 target.style.height = target.scrollHeight + 'px';
               }}
             />
+            <p className={`text-x-small mt-1 ${introductionLength >= 100 ? 'text-gray-600' : 'text-eatda-orange'}`}>
+              {introductionLength}/100
+            </p>
             {clientErrors.introduction && (
               <p className="text-eatda-orange text-x-small mt-1">{clientErrors.introduction}</p>
             )}
@@ -315,6 +442,18 @@ export default function SignupForm() {
             )}
           </div>
         )}
+
+        {/* 프로필 이미지 등록 */}
+        <div>
+          <label className="block text-display-3 font-semibold text-gray-800 mb-2">
+            프로필 이미지 등록
+          </label>
+          <AddImage
+            onChange={handleProfileImageChange}
+            maxImages={1}
+            showLabel={false}
+          />
+        </div>
       </form>
 
       <ConfirmModal

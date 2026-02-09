@@ -29,7 +29,7 @@ export function getTokenPayload(): { _id: number; type: string } | null {
   }
 }
 
-export function getAxios() {
+export function getAxios(accessToken?: string) {
   const instance = axios.create({
     baseURL: API_SERVER,
     timeout: 1000 * 10,
@@ -44,8 +44,8 @@ export function getAxios() {
     (config) => {
       console.log("요청 인터셉터 호출", config);
 
-      // 로그인된 유저의 토큰 자동 설정
-      const token = getAccessToken();
+      // 직접 전달된 토큰 우선 사용, 없으면 localStorage에서 가져오기
+      const token = accessToken || getAccessToken();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }

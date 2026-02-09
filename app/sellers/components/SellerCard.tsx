@@ -4,6 +4,7 @@ import Link from 'next/link';
 interface SellerCardProps {
   sellerId: number;
   sellerName: string;
+  tier?: string;
   rating: number;
   reviewCount: number;
   profileImage?: string;
@@ -15,6 +16,7 @@ interface SellerCardProps {
 export default function SellerCard({
   sellerId,
   sellerName,
+  tier,
   rating,
   reviewCount,
   profileImage = '/seller/seller1.png',
@@ -54,7 +56,7 @@ export default function SellerCard({
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <header className="flex flex-col gap-0">
               <h3 className="text-paragraph-lg font-semibold text-gray-800">
-                {sellerName} 주부9단
+                {sellerName} {tier}
               </h3>
 
               <div className="flex items-center gap-1 text-paragraph font-regular text-gray-700">

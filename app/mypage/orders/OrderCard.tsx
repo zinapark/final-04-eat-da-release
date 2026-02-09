@@ -1,6 +1,6 @@
 import PurchaseProductItem from '@/app/src/components/ui/PurchaseProductItem';
 import GrayButton from '@/app/src/components/ui/GrayButton';
-import type { OrderStatus } from '@/app/src/types/orderManagement';
+import type { OrderStatus } from '@/app/src/types';
 
 interface Product {
   imageSrc: string;
@@ -29,6 +29,7 @@ const statusConfig: Record<
   승인됨: { text: '승인됨', bgColor: '#81E492', textColor: '#000000' },
   조리완료: { text: '조리완료', bgColor: '#4E9FFF', textColor: '#FFFFFF' },
   픽업완료: { text: '픽업완료', bgColor: '#FF6155', textColor: '#FFFFFF' },
+  취소됨: { text: '취소됨', bgColor: '#9CA3AF', textColor: '#FFFFFF' },
 };
 
 export default function OrderCard({

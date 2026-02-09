@@ -7,10 +7,8 @@ export default function SignupPage() {
     <div className="min-h-screen bg-white flex flex-col">
       <Header title="회원가입" showBackButton />
       <div className="h-[60px]"></div>
-      <div className="flex-1 px-5 py-8 overflow-y-auto pb-32">
-        <div className="max-w-md mx-auto">
-          <SignupForm />
-        </div>
+      <div className="flex-1 px-5 py-8 overflow-y-auto pb-32 w-full max-w-[744px] min-w-[390px] mx-auto">
+        <SignupForm />
       </div>
       <BottomFixedButton as="button" formId="signupForm">
         회원가입

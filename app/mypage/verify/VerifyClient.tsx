@@ -4,20 +4,35 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import BottomFixedButton from "@/app/src/components/common/BottomFixedButton";
 import ConfirmModal from "@/app/src/components/ui/ConfirmModal";
+import useUserStore from "@/zustand/userStore";
+import { getAxios } from "@/lib/axios";
 
 export default function VerifyClient() {
   const router = useRouter();
+  const user = useUserStore((state) => state.user);
   const [password, setPassword] = useState("");
   const [isError, setIsError] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const isValid = password === "11111111";
-
-  const handleCheck = () => {
-    if (isValid) {
-      setShowModal(true);
-    } else {
+  const handleCheck = async () => {
+    if (!password || !user?.email) return;
+    setLoading(true);
+    try {
+      const axios = getAxios();
+      const res = await axios.post("/users/login", {
+        email: user.email,
+        password,
+      });
+      if (res.data.ok) {
+        setShowModal(true);
+      } else {
+        setIsError(true);
+      }
+    } catch {
       setIsError(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -43,6 +58,9 @@ export default function VerifyClient() {
               setPassword(e.target.value);
               setIsError(false);
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleCheck();
+            }}
             className="text-display-2 w-full border-b-[0.5px] border-gray-400 py-3 focus:outline-none"
           />
 
@@ -55,11 +73,9 @@ export default function VerifyClient() {
       </section>
 
       {/* 하단 고정 버튼 */}
-      <div onClick={handleCheck}>
-        <BottomFixedButton as="link" href="#">
-          확인
-        </BottomFixedButton>
-      </div>
+      <BottomFixedButton as="button" type="button" onClick={handleCheck}>
+        {loading ? "확인 중..." : "확인"}
+      </BottomFixedButton>
 
       <ConfirmModal
         isOpen={showModal}

@@ -3,7 +3,7 @@ import type {
   SellerOrderData,
   SellerOrdersResponse,
   OrderStateCode,
-} from "@/app/src/types/orderManagement";
+} from "@/app/src/types";
 
 export async function fetchSellerOrders(): Promise<SellerOrderData[]> {
   const axios = getAxios();

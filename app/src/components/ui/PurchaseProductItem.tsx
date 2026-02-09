@@ -1,5 +1,5 @@
-import { CheckoutProductItemProps } from "@/app/src/types";
-import Image from "next/image";
+import { CheckoutProductItemProps } from '@/app/src/types';
+import Image from 'next/image';
 
 export default function PurchaseProductItem({
   imageSrc,
@@ -15,7 +15,7 @@ export default function PurchaseProductItem({
         alt={dishName}
         width={55}
         height={55}
-        className="rounded-lg"
+        className="rounded-lg w-13 h-13"
       />
       <div className="flex flex-col gap-0.5">
         <p className="text-paragraph-sm">{dishName}</p>

@@ -1,8 +1,10 @@
-"use client";
+'use client';
 
-import { CartPopupProps } from "@/app/src/types";
-import CartPopupItem from "./CartPopupItem";
-import { useRouter } from "next/navigation";
+import { CartPopupProps } from '@/app/src/types';
+import CartPopupItem from './CartPopupItem';
+import { useRouter, usePathname } from 'next/navigation';
+import useUserStore from '@/zustand/userStore';
+import { useState, useRef } from 'react';
 
 export default function CartPopup({
   isOpen,
@@ -14,6 +16,60 @@ export default function CartPopup({
   onBuyNow,
 }: CartPopupProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const user = useUserStore((state) => state.user);
+
+  const [translateY, setTranslateY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const startYRef = useRef(0);
+  const CLOSE_THRESHOLD = 150;
+
+  const handleDragStart = (clientY: number) => {
+    setIsDragging(true);
+    startYRef.current = clientY;
+  };
+
+  const handleDragMove = (clientY: number) => {
+    if (!isDragging) return;
+    const deltaY = clientY - startYRef.current;
+    if (deltaY > 0) {
+      setTranslateY(deltaY);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    if (translateY > CLOSE_THRESHOLD) {
+      onClose();
+    }
+    setTranslateY(0);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    handleDragStart(e.touches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    handleDragMove(e.touches[0].clientY);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    handleDragStart(e.clientY);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    handleDragMove(e.clientY);
+  };
+
+  const handleMouseUp = () => {
+    handleDragEnd();
+  };
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      handleDragEnd();
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -24,10 +80,14 @@ export default function CartPopup({
 
   const handleAddToCart = async () => {
     onAddToCart();
-    router.push("/cart");
+    router.push('/cart');
   };
 
   const handleBuyNow = async () => {
+    if (!user) {
+      router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
     onBuyNow();
   };
 
@@ -35,9 +95,25 @@ export default function CartPopup({
     <>
       <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-50 max-h-[70vh] overflow-y-auto ">
+      <div
+        className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-50 max-h-[70vh] overflow-y-auto"
+        style={{
+          transform: `translateY(${translateY}px)`,
+          transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+        }}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+      >
         <div className="px-5 pb-5 pt-3 flex flex-col gap-5">
-          <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto" />
+          {/* 핸들 */}
+          <div
+            className="w-12 h-1 bg-gray-300 rounded-full mx-auto cursor-grab active:cursor-grabbing"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleDragEnd}
+            onMouseDown={handleMouseDown}
+          />
 
           {items.map((item) => (
             <CartPopupItem

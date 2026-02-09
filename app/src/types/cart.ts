@@ -47,6 +47,7 @@ export interface CartProduct {
     isNew: boolean;
     isBest: boolean;
     category: string[];
+    pickupPlace?: string;
   };
 }
 

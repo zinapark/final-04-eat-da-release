@@ -7,6 +7,7 @@ interface AddImageProps {
   onChange?: (images: string[], files: File[]) => void;
   maxImages?: number;
   initialImages?: string[];
+  initialFiles?: File[];
   showLabel?: boolean; // 라벨 표시 여부 추가
 }
 
@@ -14,12 +15,20 @@ export default function AddImage({
   onChange,
   maxImages = 20,
   initialImages = [],
+  initialFiles = [],
   showLabel = true, // 기본값 true (기존 동작 유지)
 }: AddImageProps) {
   const [images, setImages] = useState<string[]>(initialImages);
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<File[]>(initialFiles);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // initialImages prop 변경 시 내부 state 동기화
+  useEffect(() => {
+    if (initialImages.length > 0) {
+      setImages(initialImages);
+    }
+  }, [initialImages]);
 
   // 가로 스크롤 (마우스 휠)
   useEffect(() => {
@@ -93,11 +102,10 @@ export default function AddImage({
         {/* 등록된 이미지 미리보기 */}
         {images.map((imageUrl, index) => (
           <div key={index} className="w-17.5 h-17.5 shrink-0 relative">
-            <Image
+            <img
               src={imageUrl}
               alt={`반찬 이미지 ${index + 1}`}
-              fill
-              className="object-cover rounded-lg"
+              className="w-full h-full object-cover rounded-lg"
             />
             {/* 삭제 버튼 */}
             <button

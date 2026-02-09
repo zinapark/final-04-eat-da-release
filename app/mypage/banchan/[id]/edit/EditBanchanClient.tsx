@@ -1,26 +1,29 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import AddImage from "@/app/src/components/ui/AddImage";
-import ConfirmModal from "@/app/src/components/ui/ConfirmModal";
-import FormField from "@/app/src/components/ui/FormField";
-import CategoryDropdown from "@/app/src/components/ui/CategoryDropdown";
+import { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import AddImage from '@/app/src/components/ui/AddImage';
+import ConfirmModal from '@/app/src/components/ui/ConfirmModal';
+import FormField from '@/app/src/components/ui/FormField';
+import CategoryDropdown from '@/app/src/components/ui/CategoryDropdown';
 import {
   uploadImages,
   updateBanchan,
+  deleteBanchan,
   fetchBanchanForEdit,
   validateBanchanForm,
-} from "@/lib/banchan";
+} from '@/lib/banchan';
 import type {
   BanchanFormData,
   EditBanchanClientProps,
-} from "@/app/src/types/banchan";
+} from '@/app/src/types/banchan';
+import { EditBanchanSkeleton } from '@/app/mypage/banchan/[id]/edit/loading';
 
 export default function EditBanchanClient({ id }: EditBanchanClientProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOnSale, setIsOnSale] = useState(true);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -28,42 +31,89 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
   const [initialImages, setInitialImages] = useState<string[]>([]);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [buyQuantity, setBuyQuantity] = useState(0);
+  const [pickupAddress, setPickupAddress] = useState<string>('');
   const [formData, setFormData] = useState<BanchanFormData>({
-    name: "",
-    category: "",
-    price: "",
-    description: "",
-    ingredients: "",
-    servings: "",
-    quantity: "",
-    pickupPlace: "",
+    name: '',
+    category: '',
+    price: '',
+    description: '',
+    ingredients: '',
+    servings: '',
+    quantity: '',
+    pickupPlace: '',
+    pickupAddress: '',
   });
 
+  // 이미 복원했는지 추적하는 ref (useEffect 중복 실행 방지)
+  const hasRestoredRef = useRef(false);
+
   useEffect(() => {
+    if (hasRestoredRef.current) return;
+
+    const savedFormState = sessionStorage.getItem('editBanchanFormState');
+
+    if (savedFormState) {
+      hasRestoredRef.current = true;
+      try {
+        const saved = JSON.parse(savedFormState);
+        setFormData(saved.formData);
+        setPickupAddress(saved.pickupAddress);
+        setIsOnSale(saved.isOnSale);
+        setExistingImages(saved.existingImages);
+      } catch {
+        // white screen 방지용 trycatch
+      }
+      sessionStorage.removeItem('editBanchanFormState');
+    }
+
     fetchBanchanForEdit(id)
       .then((data) => {
-        setFormData({
-          name: data.name,
-          category: data.category,
-          price: data.price,
-          description: data.description,
-          ingredients: data.ingredients,
-          servings: data.servings,
-          quantity: data.quantity,
-          pickupPlace: data.pickupPlace,
-        });
+        if (!savedFormState) {
+          setFormData({
+            name: data.name,
+            category: data.category,
+            price: data.price,
+            description: data.description,
+            ingredients: data.ingredients,
+            servings: data.servings,
+            quantity: data.quantity,
+            pickupPlace: data.pickupPlace,
+            pickupAddress: data.pickupAddress,
+          });
+          setPickupAddress(data.pickupAddress);
+          setIsOnSale(data.show);
+          setExistingImages(data.images);
+        }
         setBuyQuantity(data.buyQuantity);
-        setIsOnSale(data.show);
-        setExistingImages(data.images);
         setInitialImages(data.images);
       })
-      .catch((error) => {
-        console.error("반찬 정보 조회 실패:", error);
-        alert("반찬 정보를 불러오지 못했습니다.");
-        router.back();
+      .catch(() => {
+        if (!savedFormState) {
+          alert('반찬 정보를 불러오지 못했습니다.');
+          router.back();
+        }
       })
       .finally(() => setLoading(false));
   }, [id, router]);
+
+  // 지도에서 돌아왔을 때 selectedKitchen 복원
+  useEffect(() => {
+    const selectedKitchen = sessionStorage.getItem('selectedKitchen');
+    if (selectedKitchen) {
+      try {
+        const kitchen = JSON.parse(selectedKitchen);
+        setFormData((prev) => ({
+          ...prev,
+          pickupPlace: kitchen.name,
+          pickupAddress: kitchen.address,
+        }));
+        setPickupAddress(kitchen.address);
+      } catch {
+        // white screen 방지용 trycatch
+      }
+      sessionStorage.removeItem('selectedKitchen');
+    }
+  }, []);
 
   const handleBlur = (field: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -78,7 +128,7 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -87,9 +137,21 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
   const handleImageChange = (images: string[], files: File[]) => {
     setImageFiles(files);
     const newExistingImages = images.filter((img) =>
-      initialImages.includes(img),
+      initialImages.includes(img)
     );
     setExistingImages(newExistingImages);
+  };
+
+  // 지도 페이지로 이동하기 전 현재 폼 상태 저장
+  const handleNavigateToMap = () => {
+    const dataToSave = {
+      formData,
+      pickupAddress,
+      isOnSale,
+      existingImages,
+    };
+    sessionStorage.setItem('editBanchanFormState', JSON.stringify(dataToSave));
+    router.push('/mypage/map');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,7 +175,7 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
 
       const existingImageObjects = existingImages.map((path) => ({
         path,
-        name: path.split("/").pop() || "",
+        name: path.split('/').pop() || '',
       }));
       const mainImages = [...existingImageObjects, ...newUploadedImages];
 
@@ -121,12 +183,13 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
         id: Number(id),
         name: formData.name,
         category: formData.category,
-        price: Number(formData.price.replace(/,/g, "")),
+        price: Number(formData.price.replace(/,/g, '')),
         quantity: Number(formData.quantity) + buyQuantity,
         description: formData.description,
         ingredients: formData.ingredients,
         servings: formData.servings,
         pickupPlace: formData.pickupPlace,
+        pickupAddress: pickupAddress,
         show: isOnSale,
         mainImages,
       });
@@ -135,12 +198,10 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
         setShowModal(true);
       }
     } catch (error: unknown) {
-      console.error("반찬 수정 실패:", error);
-
       if (error instanceof Error) {
         alert(error.message);
       } else {
-        alert("반찬 수정에 실패했습니다. 다시 시도해주세요.");
+        alert('반찬 수정에 실패했습니다. 다시 시도해주세요.');
       }
     } finally {
       setIsSubmitting(false);
@@ -149,15 +210,21 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
 
   const handleModalConfirm = () => {
     setShowModal(false);
-    router.push("/mypage/banchan");
+    router.replace('/mypage/banchan');
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteBanchan(Number(id));
+      router.replace('/mypage/banchan');
+    } catch {
+      alert('반찬 삭제에 실패했습니다. 다시 시도해주세요.');
+    }
+    setShowDeleteConfirm(false);
   };
 
   if (loading) {
-    return (
-      <div className="flex mt-16 items-center justify-center min-h-[calc(100vh-4rem)]">
-        <p className="text-gray-500">반찬 정보를 불러오는 중...</p>
-      </div>
-    );
+    return <EditBanchanSkeleton />;
   }
 
   return (
@@ -175,8 +242,8 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
             onClick={() => setIsOnSale(true)}
             className={`flex-1 h-12 rounded-lg text-display-1 font-semibold border transition-colors ${
               isOnSale
-                ? "bg-eatda-orange text-white border-eatda-orange"
-                : "bg-gray-200 text-gray-800 border-gray-300"
+                ? 'bg-eatda-orange text-white border-eatda-orange'
+                : 'bg-gray-200 text-gray-800 border-gray-300'
             }`}
           >
             판매중
@@ -186,8 +253,8 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
             onClick={() => setIsOnSale(false)}
             className={`flex-1 h-12 rounded-lg text-display-1 font-semibold border transition-colors ${
               !isOnSale
-                ? "bg-eatda-orange text-white border-eatda-orange"
-                : "bg-white text-gray-800 border-gray-300"
+                ? 'bg-eatda-orange text-white border-eatda-orange'
+                : 'bg-white text-gray-800 border-gray-300'
             }`}
           >
             판매중지
@@ -196,7 +263,7 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
         {/* 입력 필드 영역 - 판매중지 시 비활성화 */}
         <fieldset
           disabled={!isOnSale}
-          className={`flex flex-col gap-7.5 ${!isOnSale ? "text-gray-500 opacity-70" : ""}`}
+          className={`flex flex-col gap-5 ${!isOnSale ? 'text-gray-500 opacity-70' : ''}`}
         >
           {/* 반찬 이름 */}
           <FormField
@@ -204,10 +271,10 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            onBlur={() => handleBlur("name")}
+            onBlur={() => handleBlur('name')}
             placeholder="예: 불향 가득 제육볶음"
             required
-            error={getError("name")}
+            error={getError('name')}
           />
 
           {/* 반찬 이미지 등록 */}
@@ -223,10 +290,10 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
             onChange={(value) =>
               setFormData((prev) => ({ ...prev, category: value }))
             }
-            onBlur={() => handleBlur("category")}
+            onBlur={() => handleBlur('category')}
             error={
               touched.category && !formData.category
-                ? "필수 입력 사항입니다"
+                ? '필수 입력 사항입니다'
                 : undefined
             }
             disabled={!isOnSale}
@@ -238,10 +305,10 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
             name="price"
             value={formData.price}
             onChange={handleChange}
-            onBlur={() => handleBlur("price")}
+            onBlur={() => handleBlur('price')}
             placeholder="5,000"
             required
-            error={getError("price")}
+            error={getError('price')}
           />
 
           {/* 설명 */}
@@ -250,10 +317,11 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
             name="description"
             value={formData.description}
             onChange={handleChange}
-            onBlur={() => handleBlur("description")}
+            onBlur={() => handleBlur('description')}
             placeholder="반찬에 대한 소개를 작성해주세요"
             required
-            error={getError("description")}
+            as="textarea"
+            error={getError('description')}
           />
 
           {/* 재료 */}
@@ -262,11 +330,11 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
             name="ingredients"
             value={formData.ingredients}
             onChange={handleChange}
-            onBlur={() => handleBlur("ingredients")}
+            onBlur={() => handleBlur('ingredients')}
             placeholder={`재료를 쉼표로 구분해주세요\n(예: 김치, 돼지고기, 두부)`}
             as="textarea"
             required
-            error={getError("ingredients")}
+            error={getError('ingredients')}
           />
 
           {/* 인분 */}
@@ -275,10 +343,10 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
             name="servings"
             value={formData.servings}
             onChange={handleChange}
-            onBlur={() => handleBlur("servings")}
+            onBlur={() => handleBlur('servings')}
             placeholder="2"
             required
-            error={getError("servings")}
+            error={getError('servings')}
           />
 
           {/* 재고 수량 */}
@@ -287,24 +355,58 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
             name="quantity"
             value={formData.quantity}
             onChange={handleChange}
-            onBlur={() => handleBlur("quantity")}
+            onBlur={() => handleBlur('quantity')}
             placeholder="20"
             required
-            error={getError("quantity")}
+            error={getError('quantity')}
           />
 
           {/* 픽업 장소 */}
-          <FormField
-            label="픽업 장소"
-            name="pickupPlace"
-            value={formData.pickupPlace}
-            onChange={handleChange}
-            onBlur={() => handleBlur("pickupPlace")}
-            placeholder="서교동 공유주방"
-            required
-            error={getError("pickupPlace")}
-          />
+          <div>
+            <label className="block text-display-2 font-semibold text-gray-800">
+              픽업 장소 <span className="text-eatda-orange">*</span>
+            </label>
+            <button
+              type="button"
+              onClick={handleNavigateToMap}
+              className="w-full py-2 border-b border-gray-400 text-left"
+            >
+              {formData.pickupPlace ? (
+                <>
+                  <p className="text-display-2 text-gray-800">
+                    {formData.pickupPlace}
+                  </p>
+                  {pickupAddress && (
+                    <p className="text-display-1 text-gray-500">
+                      {pickupAddress}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <span className="text-gray-500 text-display-2">
+                  공유주방을 선택해주세요
+                </span>
+              )}
+            </button>
+
+            {(getError('pickupPlace') || getError('pickupAddress')) && (
+              <p className="text-x-small text-eatda-orange mt-1">
+                {!formData.pickupPlace
+                  ? '필수 입력 사항입니다'
+                  : '공유주방을 다시 선택해주세요'}
+              </p>
+            )}
+          </div>
         </fieldset>
+
+        {/* 삭제 */}
+        <button
+          type="button"
+          onClick={() => setShowDeleteConfirm(true)}
+          className="text-display-2 font-semibold text-gray-800 underline self-start"
+        >
+          삭제하기
+        </button>
       </div>
 
       {/* 제출 중 로딩 표시 */}
@@ -321,6 +423,16 @@ export default function EditBanchanClient({ id }: EditBanchanClientProps) {
         title="반찬 정보가 변경되었습니다."
         description="변경된 정보로 상품이 노출됩니다."
         onConfirm={handleModalConfirm}
+      />
+
+      {/* 삭제 확인 모달 */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        title="반찬을 삭제하시겠습니까?"
+        description="삭제된 반찬은 복구할 수 없습니다."
+        confirmText="삭제"
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
       />
     </form>
   );

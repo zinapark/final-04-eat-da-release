@@ -1,7 +1,9 @@
-import SellerCard from '@/app/sellers/components/SellerCard';
+import SellersListClient from '@/app/sellers/components/SellersListClient';
 import BottomNavigation from '@/app/src/components/common/BottomNavigation';
 import Header from '@/app/src/components/common/Header';
+import ScrollToTop from '@/app/src/components/common/ScrollToTop';
 import { getAxios } from '@/lib/axios';
+import { getTier } from '@/lib/tier';
 
 interface Seller {
   _id?: number;
@@ -9,6 +11,7 @@ interface Seller {
   name: string;
   type?: string;
   image?: string;
+  totalSales?: number;
   extra?: {
     description?: string;
     intro?: string;
@@ -22,6 +25,9 @@ interface ProductSummary {
   rating?: number;
   replies?: number;
   mainImages?: Array<{ path?: string; name?: string } | string>;
+  extra?: {
+    isSubscription?: boolean;
+  };
 }
 
 interface DishThumbnail {
@@ -123,8 +129,9 @@ export default async function SellersList() {
   const sellerCards = sellers.map((seller) => {
     const sellerId = seller._id ?? seller.seller_id ?? 0;
     const products = productsBySeller[sellerId] || [];
-    const topDishes = getTopDishes(products);
-    const { rating, reviewCount } = getSellerRating(products);
+    const dishesOnly = products.filter((p) => !p.extra?.isSubscription);
+    const topDishes = getTopDishes(dishesOnly);
+    const { rating, reviewCount } = getSellerRating(dishesOnly);
 
     return {
       sellerId,
@@ -132,44 +139,20 @@ export default async function SellersList() {
       topDishes,
       rating,
       reviewCount,
-      productCount: products.length,
+      productCount: dishesOnly.length,
+      tier: getTier(seller.totalSales as number).label,
     };
   });
-  const visibleSellerCards = sellerCards
-    .filter((card) => card.productCount > 0)
-    .sort((a, b) => b.rating - a.rating);
+  const visibleSellerCards = sellerCards.filter(
+    (card) => card.productCount >= 3
+  );
 
   return (
     <div className="flex flex-col gap-7.5 mt-15 pb-23">
+      <ScrollToTop />
       <Header title="주부 목록" showBackButton showSearch showCart />
-      <div>
-        {visibleSellerCards.map((card, index) => {
-          const isLast = index === visibleSellerCards.length - 1;
-          const sellerName = card.seller.name ?? '주부';
-          const sellerDescription =
-            card.seller.extra?.description ??
-            card.seller.extra?.intro ??
-            '정성스럽게 만든 집밥을 나눕니다.';
-          const sellerProfileImage =
-            card.seller.extra?.profileImage ??
-            card.seller.image ??
-            '/seller/seller1.png';
 
-          return (
-            <SellerCard
-              key={card.sellerId}
-              sellerId={card.sellerId}
-              sellerName={sellerName}
-              rating={card.rating}
-              reviewCount={card.reviewCount}
-              profileImage={sellerProfileImage}
-              description={sellerDescription}
-              topDishes={card.topDishes}
-              showDivider={!isLast}
-            />
-          );
-        })}
-      </div>
+      <SellersListClient sellerCards={visibleSellerCards} />
 
       <BottomNavigation />
     </div>

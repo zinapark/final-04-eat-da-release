@@ -23,14 +23,15 @@ export interface SellerOrderProduct {
 }
 
 // 주문 상태
-export type OrderStateCode = "OS020" | "OS040" | "OS060" | "OS080";
-export type OrderStatus = "대기중" | "승인됨" | "조리완료" | "픽업완료";
+export type OrderStateCode = "OS020" | "OS040" | "OS060" | "OS080" | "OS310";
+export type OrderStatus = "대기중" | "승인됨" | "조리완료" | "픽업완료" | "취소됨";
 
 export const orderState: Record<OrderStateCode, OrderStatus> = {
   OS020: "대기중",
   OS040: "승인됨",
   OS060: "조리완료",
   OS080: "픽업완료",
+  OS310: "취소됨",
 };
 
 export interface OrderUser {

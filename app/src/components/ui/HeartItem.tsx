@@ -1,6 +1,6 @@
-"use client";
-import { HeartProps, WishButtonProps } from "@/app/src/types";
-import { useState } from "react";
+'use client';
+import { HeartProps, WishButtonProps } from '@/app/src/types';
+import { useEffect, useState } from 'react';
 
 const FilledHeart = ({ size = 20 }: HeartProps) => (
   <svg width={size} height={size * 0.9} viewBox="0 0 20 18" fill="none">
@@ -21,7 +21,7 @@ const EmptyHeart = ({
   color,
   size = 20,
 }: {
-  color: "white" | "black";
+  color: 'white' | 'black';
   size?: number;
 }) => (
   <svg width={size} height={size * 0.9} viewBox="0 0 20 18" fill="none">
@@ -39,12 +39,16 @@ const EmptyHeart = ({
 
 export default function HeartItem({
   initialWished = false,
-  lineColor = "black",
+  lineColor = 'black',
   size = 20,
-  className = "",
+  className = '',
   onToggle,
 }: WishButtonProps) {
   const [isWished, setIsWished] = useState(initialWished);
+
+  useEffect(() => {
+    setIsWished(initialWished);
+  }, [initialWished]);
 
   const handleClick = () => {
     const newWishedState = !isWished;

@@ -18,7 +18,7 @@ interface UserInfo {
   phone: string;
   address: string;
   type: "user" | "seller";
-  image: string;
+  image: string | { path: string; name: string };
   bookmark: {
     products: number;
     users: number;

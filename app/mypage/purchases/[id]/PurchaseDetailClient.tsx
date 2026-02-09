@@ -1,35 +1,51 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import PurchasesDetailCard, {
-  OrderDetail,
-} from "@/app/mypage/purchases/[id]/PurchasesDetailCard";
-import GrayButton from "@/app/src/components/ui/GrayButton";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { fetchPurchaseDetail } from '@/lib/purchase';
+import type { PurchaseData } from '@/app/src/types';
+import PurchasesDetailCard from '@/app/mypage/purchases/[id]/PurchasesDetailCard';
+import GrayButton from '@/app/src/components/ui/GrayButton';
+import { PurchaseDetailSkeleton } from '@/app/mypage/purchases/[id]/loading';
 
 interface PurchaseDetailClientProps {
-  orders: OrderDetail[];
+  orderId: string;
 }
 
 export default function PurchaseDetailClient({
-  orders,
+  orderId,
 }: PurchaseDetailClientProps) {
   const router = useRouter();
+  const [order, setOrder] = useState<PurchaseData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handlePickupComplete = async (orderNumber: string) => {
-    router.push(`/mypage/purchases/${orderNumber}/complete`);
+  useEffect(() => {
+    fetchPurchaseDetail(orderId)
+      .then(setOrder)
+      .catch((e) => console.error('주문 상세 조회 실패', e))
+      .finally(() => setLoading(false));
+  }, [orderId]);
+
+  if (loading) {
+    return <PurchaseDetailSkeleton />;
+  }
+
+  if (!order) {
+    return (
+      <section className="flex-1 flex flex-col items-center justify-center">
+        <p className="text-gray-600">주문 정보를 찾을 수 없습니다.</p>
+      </section>
+    );
+  }
+
+  const handlePickupComplete = () => {
+    router.push(`/mypage/purchases/${orderId}/complete`);
   };
 
   return (
     <section className="flex-1 flex flex-col gap-5 pb-5">
-      {orders.map((order) => (
-        <div key={order.orderNumber} className="flex flex-col gap-5">
-          <PurchasesDetailCard order={order} />
-          <GrayButton
-            text="픽업 완료"
-            onClick={() => handlePickupComplete(order.orderNumber)}
-          />
-        </div>
-      ))}
+      <PurchasesDetailCard order={order} />
+      <GrayButton text="주문내역 조회" onClick={handlePickupComplete} />
     </section>
   );
 }

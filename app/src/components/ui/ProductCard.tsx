@@ -1,15 +1,18 @@
-"use client";
-import Image from "next/image";
-import HeartItem from "./HeartItem";
-import Link from "next/link";
-import { getAxios } from "@/lib/axios";
-import { useState } from "react";
-import { ProductCardProps } from "@/app/src/types";
+'use client';
+import Image from 'next/image';
+import HeartItem from './HeartItem';
+import Link from 'next/link';
+import { getAxios } from '@/lib/axios';
+import { useEffect, useState } from 'react';
+import { ProductCardProps } from '@/app/src/types';
+import { useRouter } from 'next/navigation';
+import useUserStore from '@/zustand/userStore';
 
 export default function ProductCard({
   productId,
   imageSrc,
   chefName,
+  tier,
   dishName,
   rating,
   reviewCount,
@@ -19,10 +22,37 @@ export default function ProductCard({
   isLcp = false,
   onBookmarkChange,
 }: ProductCardProps) {
-  const safeImageSrc = imageSrc || "/food1.png";
+  const safeImageSrc = imageSrc || '/food1.png';
+  const router = useRouter();
+  const user = useUserStore((state) => state.user);
   const [currentBookmarkId, setCurrentBookmarkId] = useState(bookmarkId);
+  const [isWished, setIsWished] = useState(initialWished);
+
+  useEffect(() => {
+    setIsWished(initialWished);
+  }, [initialWished]);
+
+  useEffect(() => {
+    setCurrentBookmarkId(bookmarkId);
+  }, [bookmarkId]);
 
   const handleToggleWish = async (isWished: boolean) => {
+    // 로그인 체크 - zustand의 user 상태 확인
+    if (!user || !user.token?.accessToken) {
+      // 로그인하지 않은 경우
+      // 1. 현재 상품 정보를 localStorage에 저장
+      const pendingWishItem = {
+        productId,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem('pendingWishItem', JSON.stringify(pendingWishItem));
+
+      // 2. 로그인 페이지로 리다이렉트
+      router.push('/login?redirect=wishlist');
+      return;
+    }
+
+    // 로그인한 경우 기존 로직 실행
     try {
       const axios = getAxios();
 
@@ -31,12 +61,12 @@ export default function ProductCard({
           target_id: productId,
         });
         setCurrentBookmarkId(response.data.item._id);
-        console.log("북마크 추가 성공");
+        console.log('북마크 추가 성공');
       } else {
         if (currentBookmarkId) {
           await axios.delete(`/bookmarks/${currentBookmarkId}`);
           setCurrentBookmarkId(undefined);
-          console.log("북마크 삭제 성공");
+          console.log('북마크 삭제 성공');
         }
       }
 
@@ -44,7 +74,20 @@ export default function ProductCard({
         onBookmarkChange();
       }
     } catch (error) {
-      console.error("북마크 에러:", error);
+      console.error('북마크 에러:', error);
+
+      // 401 에러(인증 실패)인 경우 로그인 페이지로
+      if ((error as any)?.response?.status === 401) {
+        const pendingWishItem = {
+          productId,
+          timestamp: Date.now(),
+        };
+        localStorage.setItem(
+          'pendingWishItem',
+          JSON.stringify(pendingWishItem)
+        );
+        router.push('/login?redirect=wishlist');
+      }
     }
   };
 
@@ -57,7 +100,7 @@ export default function ProductCard({
           alt={dishName}
           className="object-cover"
           sizes="50vw"
-          loading={isLcp ? "eager" : "lazy"}
+          loading={isLcp ? 'eager' : 'lazy'}
           priority={isLcp}
         />
         <div
@@ -68,7 +111,7 @@ export default function ProductCard({
           className="absolute bottom-2 right-1"
         >
           <HeartItem
-            initialWished={initialWished}
+            initialWished={isWished}
             lineColor="white"
             size={25}
             onToggle={handleToggleWish}
@@ -78,7 +121,7 @@ export default function ProductCard({
       <div className="pt-4 pb-5 px-2.5 space-y-1">
         <div className="flex gap-2 items-center">
           <p className="text-eatda-orange text-display-1 font-semibold">
-            {chefName}
+            {chefName} {tier}
           </p>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -97,7 +140,7 @@ export default function ProductCard({
           </svg>
         </div>
         <div className="flex items-center">
-          <p className="text-paragraph mr-2">{dishName}</p>
+          <p className="text-paragraph font-regular mr-2">{dishName}</p>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="14"
@@ -110,8 +153,9 @@ export default function ProductCard({
               fill="#FF6155"
             />
           </svg>
-          <p className="text-x-small ml-1">
-            {rating.toFixed(1)}({reviewCount})
+          <p className="flex leading-none items-center ml-0.5 gap-0.5">
+            <span className="text-[13px] font-light">{rating.toFixed(1)}</span>
+            <span className="text-[11px] text-gray-600">({reviewCount})</span>
           </p>
         </div>
         <p className="text-paragraph-md font-semibold">

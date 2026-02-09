@@ -117,6 +117,28 @@ async function seed({ reset = false } = {}) {
       );
     }
 
+    // ✅ 자동 증가 카운터 갱신 (API 서버가 새 문서에 중복 _id를 부여하지 않도록)
+    const counterCol = db.collection("counter");
+    const maxUserId = Math.max(...sellers.map((s) => s._id), ...users.map((u) => u._id));
+    const maxProductId = Math.max(...products.map((p) => p._id));
+    const maxReviewId = Math.max(...reviews.map((r) => r._id));
+
+    await counterCol.bulkWrite(
+      [
+        { col: "user", seq: maxUserId },
+        { col: "product", seq: maxProductId },
+        { col: "reply", seq: maxReviewId },
+      ].map(({ col, seq }) => ({
+        updateOne: {
+          filter: { _id: col },
+          update: { $max: { seq } },
+          upsert: true,
+        },
+      })),
+      { ordered: false },
+    );
+    console.log(`✅ 카운터 갱신: user=${maxUserId}, product=${maxProductId}, reply=${maxReviewId}`);
+
     const productCount = await productCol.countDocuments();
     const sellerCount = await userCol.countDocuments({ type: "seller" });
     const userCount = await userCol.countDocuments({ type: "user" });

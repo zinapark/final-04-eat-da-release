@@ -1,19 +1,25 @@
+import Link from 'next/link';
+
 interface SellerProfileCardProps {
   name: string;
+  tier?: string;
   rating?: number;
   reviewCount?: number;
   profileImage?: string;
   description?: string;
+  sellerId?: number;
 }
 
 export default function SellerProfileCard({
   name,
+  tier,
   rating = 0,
   reviewCount = 0,
-  profileImage = "/seller/seller1.png",
-  description = "정성스럽게 만든 집밥을 나눕니다.",
+  profileImage = '/seller/seller1.png',
+  description = '정성스럽게 만든 집밥을 나눕니다.',
+  sellerId,
 }: SellerProfileCardProps) {
-  return (
+  const CardContent = (
     <article className="flex items-start mx-5 gap-2.5 self-stretch rounded-lg border border-gray-300 bg-gray-200 px-2.5 py-5">
       <img
         src={profileImage}
@@ -24,7 +30,7 @@ export default function SellerProfileCard({
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <header className="flex flex-col gap-0">
           <h3 className="text-paragraph-lg font-semibold text-gray-800">
-            {name} 주부9단
+            {name} {tier}
           </h3>
 
           <div className="flex items-center gap-1 text-paragraph font-regular text-gray-700">
@@ -54,4 +60,10 @@ export default function SellerProfileCard({
       </div>
     </article>
   );
+
+  if (sellerId) {
+    return <Link href={`/sellers/${sellerId}`}>{CardContent}</Link>;
+  }
+
+  return CardContent;
 }

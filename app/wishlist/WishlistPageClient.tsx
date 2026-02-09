@@ -1,35 +1,107 @@
-"use client";
+'use client';
 
-import ProductCard from "@/app/src/components/ui/ProductCard";
-import Header from "@/app/src/components/common/Header";
-import BottomNavigation from "@/app/src/components/common/BottomNavigation";
-import { getAxios } from "@/lib/axios";
-import { useEffect, useState } from "react";
-import { BookmarkProduct } from "@/app/src/types";
+import ProductCard from '@/app/src/components/ui/ProductCard';
+import Header from '@/app/src/components/common/Header';
+import BottomNavigation from '@/app/src/components/common/BottomNavigation';
+import { getAxios, getTokenPayload } from '@/lib/axios';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { BookmarkProduct } from '@/app/src/types';
+import useUserStore from '@/zustand/userStore';
+import { getTier } from '@/lib/tier';
+
+const ProductCardSkeleton = () => (
+  <div className="p-2 animate-pulse">
+    <div className="w-full aspect-square bg-gray-200 rounded-lg mb-2" />
+    <div className="h-3 bg-gray-200 rounded w-1/2 mb-2" />
+    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+    <div className="h-3 bg-gray-200 rounded w-1/3 mb-2" />
+    <div className="h-4 bg-gray-200 rounded w-1/2" />
+  </div>
+);
 
 export default function WishlistPageClient() {
+  const router = useRouter();
+  const loggedInUser = useUserStore((state) => state.user);
+
   const [bookmarks, setBookmarks] = useState<BookmarkProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [sellerTotalSales, setSellerTotalSales] = useState<
+    Record<number, number>
+  >({});
 
-  const fetchBookmarks = async () => {
+  useEffect(() => {
+    const tokenPayload = getTokenPayload();
+
+    if (!tokenPayload && !loggedInUser) {
+      router.replace('/login?redirect=/wishlist');
+      return;
+    }
+
+    fetchData();
+  }, [loggedInUser, router]);
+
+  const fetchData = async () => {
     try {
       const axios = getAxios();
-      const response = await axios.get("/bookmarks/product");
-      setBookmarks(response.data.item || []);
+
+      const [productsResponse, usersResponse, bookmarksResponse] =
+        await Promise.all([
+          axios.get('/products/'),
+          axios.get('/users/'),
+          axios.get('/bookmarks/product'),
+        ]);
+
+      const products = productsResponse.data.item || [];
+      const users = usersResponse.data.item || [];
+      const bookmarks = bookmarksResponse.data.item || [];
+
+      const salesMap: Record<number, number> = {};
+      users.forEach((user: any) => {
+        if (user.type === 'seller') {
+          const sellerId = user._id || user.seller_id;
+          if (sellerId) {
+            salesMap[sellerId] = user.totalSales ?? 0;
+          }
+        }
+      });
+
+      setSellerTotalSales(salesMap);
+
+      const bookmarksWithFullInfo = bookmarks
+        .map((bookmark: any) => {
+          const fullProduct = products.find(
+            (p: any) => p._id === bookmark.product._id
+          );
+
+          if (fullProduct) {
+            return {
+              ...bookmark,
+              product: fullProduct,
+            };
+          }
+          return bookmark;
+        })
+        .reverse();
+
+      setBookmarks(bookmarksWithFullInfo);
     } catch (error) {
-      console.error("북마크 목록 조회 실패:", error);
+      console.error('데이터 조회 실패:', error);
+      if ((error as any)?.response?.status === 401) {
+        router.replace('/login?redirect=/wishlist');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchBookmarks();
-  }, []);
-
   const handleBookmarkDeleted = () => {
-    fetchBookmarks();
+    fetchData();
   };
+
+  if (!loggedInUser && !getTokenPayload()) {
+    return null;
+  }
 
   return (
     <>
@@ -41,32 +113,44 @@ export default function WishlistPageClient() {
       />
       <div className="mt-15 mb-16">
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <p className="text-gray-600">로딩 중...</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 sm:gap-2">
+            {[...Array(6)].map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
           </div>
         ) : bookmarks.length === 0 ? (
           <div className="flex items-center justify-center py-20">
             <p className="text-gray-600">찜한 상품이 없습니다.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2">
-            {bookmarks.map((bookmark) => (
-              <ProductCard
-                key={bookmark._id}
-                productId={bookmark.product._id}
-                imageSrc={
-                  bookmark.product.mainImages?.[0]?.path || "/food1.png"
-                }
-                chefName={bookmark.product.seller?.name || "주부"}
-                dishName={bookmark.product.name}
-                rating={bookmark.product.extra?.rating || 0}
-                reviewCount={bookmark.product.extra?.replies || 0}
-                price={bookmark.product.price}
-                initialWished={true}
-                bookmarkId={bookmark._id}
-                onBookmarkChange={handleBookmarkDeleted}
-              />
-            ))}
+          <div className="grid grid-cols-2 sm:grid-cols-3 sm:gap-2">
+            {bookmarks.map((bookmark) => {
+              const sellerId = (bookmark.product.seller as any)?._id;
+              const totalSales = sellerTotalSales[sellerId] ?? 0;
+
+              return (
+                <ProductCard
+                  key={bookmark._id}
+                  productId={bookmark.product._id}
+                  imageSrc={
+                    bookmark.product.mainImages?.[0]?.path || '/food1.png'
+                  }
+                  chefName={bookmark.product.seller?.name || '주부'}
+                  tier={getTier(totalSales).label}
+                  dishName={bookmark.product.name}
+                  rating={bookmark.product.rating || 0}
+                  reviewCount={
+                    typeof bookmark.product.replies === 'number'
+                      ? bookmark.product.replies
+                      : (bookmark.product.replies?.length ?? 0)
+                  }
+                  price={bookmark.product.price}
+                  initialWished={true}
+                  bookmarkId={bookmark._id}
+                  onBookmarkChange={handleBookmarkDeleted}
+                />
+              );
+            })}
           </div>
         )}
       </div>

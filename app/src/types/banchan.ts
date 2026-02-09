@@ -8,6 +8,7 @@ export interface BanchanFormData {
   servings: string;
   quantity: string;
   pickupPlace: string;
+  pickupAddress: string;
 }
 
 // 반찬 등록/수정 API 데이터
@@ -20,6 +21,7 @@ export interface BanchanData {
   ingredients: string;
   servings: string;
   pickupPlace: string;
+  pickupAddress?: string;
   mainImages: { path: string; name: string }[];
   id?: number;
   show?: boolean;
@@ -82,6 +84,7 @@ export interface EditBanchanInitialData {
   quantity: string;
   buyQuantity: number;
   pickupPlace: string;
+  pickupAddress: string;
   images: string[];
   show: boolean;
 }
