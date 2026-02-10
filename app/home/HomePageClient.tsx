@@ -68,9 +68,10 @@ export default function HomePageClient() {
   const [recommendSeller, setRecommendSeller] =
     useState<SellerWithStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [showSplash, setShowSplash] = useState(
-    () => !sessionStorage.getItem('splashShown')
-  );
+  const [showSplash, setShowSplash] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return !sessionStorage.getItem('splashShown');
+  });
   const [splashVisible, setSplashVisible] = useState(false);
   const [splashFading, setSplashFading] = useState(false);
 
