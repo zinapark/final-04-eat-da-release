@@ -33,6 +33,8 @@ export default function AccountClient() {
   const [phone, setPhone] = useState('');
   const [addressValue, setAddressValue] = useState('');
   const [detailAddress, setDetailAddress] = useState('');
+  const [introduction, setIntroduction] = useState('');
+  const [introductionLength, setIntroductionLength] = useState(0);
   const [profileImageFiles, setProfileImageFiles] = useState<File[]>([]);
   const [initialImages, setInitialImages] = useState<string[]>([]);
   const [existingImage, setExistingImage] = useState<{ path: string; name: string } | null>(null);
@@ -65,17 +67,24 @@ export default function AccountClient() {
       setEmail(userInfo.email);
       setPhone(userInfo.phone || '');
       setAddressValue(userInfo.address || '');
+      setDetailAddress(userInfo.extra?.detailAddress || '');
+      if (userInfo.extra?.introduction) {
+        setIntroduction(userInfo.extra.introduction);
+        setIntroductionLength(userInfo.extra.introduction.length);
+      }
 
-      // 이미지 처리
+      // 이미지 처리 (직접 업로드한 이미지만 표시, 기본 아바타 URL은 제외)
       if (userInfo.image) {
-        if (typeof userInfo.image === 'string') {
+        const imagePath = typeof userInfo.image === 'string' ? userInfo.image : userInfo.image.path;
+        if (!imagePath.startsWith('http')) {
           const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/market', '') || '';
-          setInitialImages([`${apiUrl}${userInfo.image}`]);
-          setExistingImage({ path: userInfo.image, name: '' });
-        } else {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/market', '') || '';
-          setInitialImages([`${apiUrl}${userInfo.image.path}`]);
-          setExistingImage(userInfo.image);
+          if (typeof userInfo.image === 'string') {
+            setInitialImages([`${apiUrl}${userInfo.image}`]);
+            setExistingImage({ path: userInfo.image, name: '' });
+          } else {
+            setInitialImages([`${apiUrl}${userInfo.image.path}`]);
+            setExistingImage(userInfo.image);
+          }
         }
       }
 
@@ -179,6 +188,7 @@ export default function AccountClient() {
         address: addressValue,
         extra: {
           detailAddress,
+          ...(userType === 'seller' ? { introduction } : {}),
         },
       };
 
@@ -286,6 +296,7 @@ export default function AccountClient() {
           </label>
           <input
             type="email"
+            autoComplete="off"
             value={email}
             placeholder="example@youremail.com"
             onBlur={(e) => handleBlur('email', e.target.value)}
@@ -304,6 +315,7 @@ export default function AccountClient() {
           </label>
           <input
             type="password"
+            autoComplete="off"
             value={passwordValue}
             placeholder="변경할 비밀번호를 입력하세요"
             onBlur={(e) => handleBlur('password', e.target.value)}
@@ -323,6 +335,7 @@ export default function AccountClient() {
             </label>
             <input
               type="password"
+              autoComplete="off"
               value={confirmPasswordValue}
               placeholder="비밀번호를 한번 더 입력하세요"
               onBlur={(e) => handleBlur('confirmPassword', e.target.value)}
@@ -342,6 +355,7 @@ export default function AccountClient() {
           </label>
           <input
             type="tel"
+            autoComplete="off"
             value={phone}
             placeholder="010-0000-0000"
             onBlur={(e) => handleBlur('phone', e.target.value)}
@@ -387,6 +401,7 @@ export default function AccountClient() {
           </label>
           <input
             type="text"
+            autoComplete="off"
             ref={detailAddressRef}
             value={detailAddress}
             placeholder="상세주소를 입력하세요"
@@ -398,6 +413,33 @@ export default function AccountClient() {
             <p className="text-eatda-orange text-x-small mt-1">{clientErrors.detailAddress}</p>
           )}
         </div>
+
+        {/* 자기소개 - 주부일 때만 표시 */}
+        {userType === 'seller' && (
+          <div>
+            <label className="block text-display-3 font-semibold text-gray-800 mb-2">
+              자기소개
+            </label>
+            <textarea
+              value={introduction}
+              placeholder="요리를 시작하게 된 계기나 자신 있는 반찬 이야기를 적어주시면 좋아요. (100자 이상)"
+              className="w-full py-3 border-0 border-b border-gray-400 focus:outline-none focus:border-gray-600 placeholder:text-gray-500 focus:placeholder:text-transparent text-gray-800 text-display-2 placeholder:text-display-2 resize-none overflow-hidden"
+              rows={3}
+              onChange={(e) => {
+                setIntroduction(e.target.value);
+                setIntroductionLength(e.target.value.length);
+              }}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = target.scrollHeight + 'px';
+              }}
+            />
+            <p className={`text-x-small mt-1 ${introductionLength >= 100 ? 'text-gray-600' : 'text-eatda-orange'}`}>
+              {introductionLength}/100
+            </p>
+          </div>
+        )}
 
         {/* 프로필 이미지 */}
         <div>

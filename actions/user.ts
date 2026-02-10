@@ -125,7 +125,7 @@ export async function signup(
   const phone = formData.get('phone') as string;
   const addressBase = formData.get('address') as string;
   const detailAddress = formData.get('detailAddress') as string;
-  const address = detailAddress ? `${addressBase} ${detailAddress}` : addressBase;
+  const address = addressBase;
   const introduction = formData.get('introduction') as string;
   const profileImageStr = formData.get('profileImage') as string;
 
@@ -194,7 +194,10 @@ export async function signup(
       phone,
       address,
       image,
-      ...(type === 'seller' && { extra: { introduction } }),
+      extra: {
+        detailAddress,
+        ...(type === 'seller' ? { introduction } : {}),
+      },
     };
 
     const response = await getAxios().post('/users', userData);

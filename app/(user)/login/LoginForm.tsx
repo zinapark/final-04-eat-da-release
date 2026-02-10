@@ -166,6 +166,8 @@ export default function LoginForm() {
           <input
             type="email"
             name="email"
+            autoComplete="off"
+            defaultValue="seller@eatda.com"
             placeholder="example@youremail.com"
             onBlur={(e) => handleBlur('email', e.target.value)}
             onChange={() =>
@@ -193,6 +195,8 @@ export default function LoginForm() {
           <input
             type="password"
             name="password"
+            autoComplete="off"
+            defaultValue="qwer1234"
             placeholder="비밀번호를 입력하세요"
             onBlur={(e) => handleBlur('password', e.target.value)}
             onChange={() =>

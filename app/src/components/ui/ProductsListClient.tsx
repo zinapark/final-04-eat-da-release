@@ -8,6 +8,7 @@ import ProductCard from '@/app/src/components/ui/ProductCard';
 import { Product } from '@/app/src/types';
 import { getTier } from '@/lib/tier';
 import { getAxios, getAccessToken } from '@/lib/axios';
+import useKitchenStore from '@/zustand/kitchenStore';
 
 type SortOption = 'recommend' | 'rating' | 'purchase' | 'latest';
 
@@ -86,6 +87,7 @@ function sortProducts(products: Product[], sortBy: SortOption): Product[] {
 export default function ProductsListClient({
   products: initialProducts,
 }: ProductsListClientProps) {
+  const nearestKitchen = useKitchenStore((state) => state.nearestKitchen);
   const [selected, setSelected] = useState<CategoryLabel>('전체');
   const [sortBy, setSortBy] = useState<SortOption>('recommend');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -152,11 +154,14 @@ export default function ProductsListClient({
   const lastScrollY = useRef(0);
 
   const filtered = useMemo(() => {
-    const categoryFiltered = products.filter((p) =>
+    const kitchenFiltered = products.filter(
+      (p) => p.extra?.pickupPlace === nearestKitchen
+    );
+    const categoryFiltered = kitchenFiltered.filter((p) =>
       matchesCategory(p, selected)
     );
     return sortProducts(categoryFiltered, sortBy);
-  }, [products, selected, sortBy]);
+  }, [products, selected, sortBy, nearestKitchen]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -222,28 +227,32 @@ export default function ProductsListClient({
             </svg>
           </button>
 
-          {isDropdownOpen && (
-            <div className="absolute top-full right-1 mt-1 bg-white border border-gray-200 rounded-lg overflow-hidden">
-              {(Object.keys(sortLabels) as SortOption[])
-                .filter((option) => option !== sortBy)
-                .map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => {
-                      setSortBy(option);
-                      setIsDropdownOpen(false);
-                    }}
-                    className="block w-full px-4 py-2 text-paragraph text-gray-800 hover:bg-gray-100 text-left whitespace-nowrap"
-                  >
-                    {sortLabels[option]}
-                  </button>
-                ))}
-            </div>
-          )}
+          <div
+            className={`absolute top-full right-1 mt-1 bg-white border border-gray-200 rounded-lg overflow-hidden transition-all duration-200 origin-top ${
+              isDropdownOpen
+                ? 'opacity-100 scale-y-100'
+                : 'opacity-0 scale-y-0 pointer-events-none'
+            }`}
+          >
+            {(Object.keys(sortLabels) as SortOption[])
+              .filter((option) => option !== sortBy)
+              .map((option) => (
+                <button
+                  key={option}
+                  onClick={() => {
+                    setSortBy(option);
+                    setIsDropdownOpen(false);
+                  }}
+                  className="block w-full px-4 py-2 text-paragraph text-gray-800 hover:bg-gray-100 text-left whitespace-nowrap"
+                >
+                  {sortLabels[option]}
+                </button>
+              ))}
+          </div>
         </div>
       </div>
 
-      <div className="mt-25 mb-16 grid grid-cols-2">
+      <div className="mt-25 mb-16 grid grid-cols-2 sm:grid-cols-3 sm:gap-2">
         {filtered.map((product, index) => (
           <ProductCard
             key={product._id}

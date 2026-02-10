@@ -3,7 +3,7 @@ import BottomNavigation from '@/app/src/components/common/BottomNavigation';
 
 function ProfileSkeleton() {
   return (
-    <section className="p-5 border border-gray-400 rounded-lg bg-gray-200 animate-pulse">
+    <section className="p-5 border border-gray-300 rounded-lg bg-gray-200 animate-pulse">
       <div className="flex items-start gap-2.5">
         {/* 프로필 이미지 */}
         <div className="w-15 h-15 rounded-full bg-gray-300 flex-none" />
@@ -41,7 +41,7 @@ function MenuListSkeleton() {
         {Array.from({ length: 7 }).map((_, i) => (
           <li
             key={i}
-            className="py-5 border-b border-gray-400 flex items-center"
+            className="py-5 border-b border-gray-300 flex items-center"
           >
             <div className="h-4 bg-gray-200 rounded w-24" />
           </li>

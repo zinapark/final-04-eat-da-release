@@ -404,7 +404,10 @@ const categories = [
   },
 ];
 
-const defaultPickupPlace = '서교동 공유주방';
+// 더미데이터 등록 대상 공유주방 2곳
+const seedKitchens = [
+  { name: '서교동 공유주방', address: '서울특별시 마포구 동교로15길' },
+];
 const defaultServing = '2인분';
 
 // 요리명 → 재료 매핑
@@ -580,7 +583,7 @@ const imagesByName = {
   // 볶음 (stir)
   // =========================
   소시지야채볶음:
-    'https://zipbanchan.godohosting.com//800X800px/7_fry/2361_ZIP_P_6233_T_2.jpg',
+    'https://zipbanchan.godohosting.com/800X800px/7_fry/2361_ZIP_P_6233_T_2.jpg',
   새우볶음:
     'https://zipbanchan.godohosting.com/800X800px/7_fry/160_ZIP_P_6030_T_re.jpg',
   오징어볶음:
@@ -590,7 +593,7 @@ const imagesByName = {
   버섯볶음:
     'https://zipbanchan.godohosting.com/800X800px/5_kid/1731_ZIP_P_6292_T.jpg',
   어묵볶음:
-    'https://zipbanchan.godohosting.com//800X800px/7_fry/2359_ZIP_P_6431_T_2.png',
+    'https://zipbanchan.godohosting.com/800X800px/7_fry/2359_ZIP_P_6431_T_2.png',
   두부김치: '/food/TofuKimchi.jpg',
   가지볶음:
     'https://zipbanchan.godohosting.com/800X800px/7_fry/1692_ZIP_P_6291_T.jpg',
@@ -884,40 +887,44 @@ function createProducts({ startId = 1 } = {}) {
     fry: [5000, 11000],
   };
 
-  categories.forEach((cat) => {
-    const [min, max] = priceRangeByCategory[cat.key] ?? [4500, 16000];
+  // 모든 대표 공유주방에 동일한 반찬 세트를 등록
+  seedKitchens.forEach((kitchen) => {
+    categories.forEach((cat) => {
+      const [min, max] = priceRangeByCategory[cat.key] ?? [4500, 16000];
 
-    cat.items.forEach((name, idx) => {
-      const sellerId = pickSellerIdByIndex(id);
+      cat.items.forEach((name, idx) => {
+        const sellerId = pickSellerIdByIndex(id);
 
-      products.push({
-        _id: id,
-        createdAt: now,
-        updatedAt: now,
-        seller_id: sellerId,
-        price: randomPrice(min, max),
-        show: true,
-        active: true,
-        name,
-        quantity: randomBetween(30, 300),
-        buyQuantity: randomBetween(0, 30),
-        mainImages: [getImage(name, cat.key, idx + 1)],
-        content: getContent(name, cat.key),
-        extra: {
-          isNew: idx < 3,
-          isBest: idx % 4 === 0,
-          category: [cat.key],
-          categoryLabel: cat.label,
+        products.push({
+          _id: id,
+          createdAt: now,
+          updatedAt: now,
+          seller_id: sellerId,
+          price: randomPrice(min, max),
+          show: true,
+          active: true,
+          name,
+          quantity: randomBetween(30, 300),
+          buyQuantity: randomBetween(0, 30),
+          mainImages: [getImage(name, cat.key, idx + 1)],
+          content: getContent(name, cat.key),
+          extra: {
+            isNew: idx < 3,
+            isBest: idx % 4 === 0,
+            category: [cat.key],
+            categoryLabel: cat.label,
 
-          // ✅ 상세용 확장 데이터
-          ingredients: getIngredients(name, cat.key),
-          description: getContent(name, cat.key),
-          serving: defaultServing,
-          pickupPlace: defaultPickupPlace,
-        },
+            // ✅ 상세용 확장 데이터
+            ingredients: getIngredients(name, cat.key),
+            description: getContent(name, cat.key),
+            serving: defaultServing,
+            pickupPlace: kitchen.name,
+            pickupAddress: kitchen.address,
+          },
+        });
+
+        id += 1;
       });
-
-      id += 1;
     });
   });
 
@@ -954,6 +961,62 @@ const reviewTemplates = {
       title: '너무 좋아요',
       content: '반찬 퀄리티가 정말 좋아요. 집에서 해먹기 귀찮을 때 딱이에요.',
     },
+    {
+      title: '손맛 최고',
+      content: '정성이 느껴지는 맛이에요. 이런 반찬 어디서 못 사요!',
+    },
+    {
+      title: '가족 모두 좋아해요',
+      content: '온 가족이 맛있다고 난리에요. 아이들도 잘 먹어서 감사합니다.',
+    },
+    {
+      title: '진짜 집밥이에요',
+      content: '혼자 살면서 이런 맛 처음이에요. 엄마 밥상 그 자체입니다.',
+    },
+    {
+      title: '매일 시키고 싶어요',
+      content: '매번 주문해도 맛이 한결같아요. 믿고 먹는 반찬이에요.',
+    },
+    {
+      title: '정성 가득',
+      content: '하나하나 정성껏 만드신 게 느껴져요. 맛도 영양도 최고입니다.',
+    },
+    {
+      title: '강력 추천합니다',
+      content: '친구한테도 추천했어요. 맛보면 다들 반할 수밖에 없어요.',
+    },
+    {
+      title: '감탄했어요',
+      content: '이 가격에 이 퀄리티라니 놀랐어요. 정말 맛있게 먹었습니다.',
+    },
+    {
+      title: '행복한 한 끼',
+      content: '덕분에 행복한 저녁 먹었어요. 다음에도 꼭 주문할게요!',
+    },
+    {
+      title: '기대 이상이에요',
+      content: '솔직히 반신반의했는데 먹어보고 깜짝 놀랐어요. 진짜 맛있어요!',
+    },
+    {
+      title: '건강한 맛',
+      content: '자극적이지 않고 건강한 맛이에요. 매일 먹어도 질리지 않아요.',
+    },
+    {
+      title: '또 주문했어요',
+      content: '벌써 세 번째 주문이에요. 질리지 않는 깊은 맛이 좋아요.',
+    },
+    {
+      title: '선물하고 싶은 맛',
+      content: '부모님께 보내드렸는데 너무 맛있다고 하세요. 효도했어요!',
+    },
+    {
+      title: '최애 반찬',
+      content: '여러 곳 시켜봤는데 여기 반찬이 제일 입맛에 맞아요.',
+    },
+    {
+      title: '눈물 날 뻔했어요',
+      content: '오랜만에 먹어본 고향 맛이에요. 너무 그리웠던 맛입니다.',
+    },
   ],
   4: [
     {
@@ -980,6 +1043,54 @@ const reviewTemplates = {
       title: '괜찮은 편',
       content: '무난하게 맛있어요. 특별히 나쁜 점은 없었어요.',
     },
+    {
+      title: '맛은 좋아요',
+      content: '맛은 확실히 좋은데 배달이 조금 늦었어요. 맛으로 용서!',
+    },
+    {
+      title: '나쁘지 않아요',
+      content: '전반적으로 만족해요. 간이 살짝 싱거웠지만 건강한 맛이에요.',
+    },
+    {
+      title: '또 시킬게요',
+      content: '가격도 적당하고 맛도 괜찮아요. 종류가 더 다양하면 좋겠어요.',
+    },
+    {
+      title: '포장이 좋아요',
+      content: '포장이 깔끔해서 좋았어요. 맛도 기대한 만큼 괜찮았습니다.',
+    },
+    {
+      title: '든든해요',
+      content: '양이 넉넉해서 든든하게 먹었어요. 맛도 나쁘지 않아요.',
+    },
+    {
+      title: '추천해요',
+      content: '이 가격에 이 정도면 추천할 만해요. 다음엔 다른 것도 시켜볼게요.',
+    },
+    {
+      title: '맛나게 먹었어요',
+      content: '반찬 종류가 다양해서 좋았어요. 간이 조금만 더 맞으면 완벽할 듯요.',
+    },
+    {
+      title: '편하게 먹기 좋아요',
+      content: '요리할 시간 없을 때 딱이에요. 맛도 준수하고 편리합니다.',
+    },
+    {
+      title: '기본은 해요',
+      content: '집밥 반찬으로 충분해요. 특별하진 않지만 꾸준히 시킬 것 같아요.',
+    },
+    {
+      title: '잘 먹었습니다',
+      content: '아이도 잘 먹어서 다행이에요. 다음에 또 주문하려고요.',
+    },
+    {
+      title: '무난하게 좋아요',
+      content: '크게 불만 없이 맛있게 먹었어요. 가성비 괜찮은 편이에요.',
+    },
+    {
+      title: '소소한 행복',
+      content: '퇴근 후에 따뜻하게 데워 먹으니 소소하게 행복하더라고요.',
+    },
   ],
   3: [
     {
@@ -998,27 +1109,45 @@ const reviewTemplates = {
       title: '아쉬워요',
       content: '간이 좀 맞지 않았어요. 다음엔 다른 메뉴 시켜볼게요.',
     },
-    { title: '기대 이하', content: '사진보다 양이 적어서 좀 아쉬웠어요.' },
-  ],
-  2: [
     {
-      title: '별로예요',
-      content: '맛이 기대에 못 미쳤어요. 개선이 필요할 것 같아요.',
+      title: '기대 이하',
+      content: '사진보다 양이 적어서 좀 아쉬웠어요.',
     },
     {
-      title: '아쉬운 점이 많아요',
-      content: '간이 너무 짜고 양도 적어요. 재주문은 고민될 것 같아요.',
-    },
-    { title: '기대와 달랐어요', content: '사진이랑 많이 달라서 실망했어요.' },
-  ],
-  1: [
-    {
-      title: '실망이에요',
-      content: '맛이 너무 없어요. 환불받고 싶을 정도예요.',
+      title: '호불호 갈릴 듯',
+      content: '제 입맛에는 살짝 안 맞았어요. 취향 차이인 것 같아요.',
     },
     {
-      title: '다시는 안 시켜요',
-      content: '배송도 늦고 맛도 없어요. 비추천합니다.',
+      title: '양이 아쉬워요',
+      content: '맛은 나쁘지 않은데 양이 너무 적어요. 가격을 낮추거나 양을 늘려주세요.',
+    },
+    {
+      title: '그저 그래요',
+      content: '크게 감흥은 없었어요. 집에서 해먹는 것과 비슷한 수준이에요.',
+    },
+    {
+      title: '다음엔 다른 걸로',
+      content: '한 번쯤 먹기엔 괜찮은데 재주문은 고민되네요.',
+    },
+    {
+      title: '살짝 짜요',
+      content: '간이 좀 센 편이에요. 덜 짜면 더 맛있을 것 같아요.',
+    },
+    {
+      title: '기대만큼은 아니에요',
+      content: '리뷰 보고 기대했는데 생각보다 평범했어요. 나쁘진 않지만요.',
+    },
+    {
+      title: '먹을만 해요',
+      content: '못 먹을 정도는 아닌데 특별한 맛은 아니었어요.',
+    },
+    {
+      title: '조금 아쉬운 맛',
+      content: '재료는 신선한데 양념이 좀 부족한 느낌이었어요.',
+    },
+    {
+      title: '무난해요',
+      content: '딱 보통 수준이에요. 급할 때 시키기엔 괜찮아요.',
     },
   ],
 };
@@ -1029,30 +1158,49 @@ function createReviews(products, users) {
   let reviewId = 1;
   let orderId = 1;
 
+  // 같은 판매자(주부) 상품에 동일 리뷰 내용이 달리지 않도록 seller 단위 추적
+  const usedContentsBySeller = new Map();
+
   products.forEach((product) => {
-    // 각 상품당 3~9개의 리뷰 랜덤 생성
-    const reviewCount = randomBetween(3, 9);
-    const usedUserIds = new Set();
+    const sellerId = product.seller_id;
+
+    if (!usedContentsBySeller.has(sellerId)) {
+      usedContentsBySeller.set(sellerId, new Set());
+    }
+    const sellerUsedContents = usedContentsBySeller.get(sellerId);
+
+    // 각 상품당 3~7개의 리뷰 랜덤 생성
+    const reviewCount = randomBetween(3, 7);
+    const productUsedUserIds = new Set();
 
     for (let i = 0; i < reviewCount; i++) {
       // 같은 상품에 같은 유저가 중복 리뷰하지 않도록
       let user;
+      let userAttempts = 0;
       do {
         user = users[randomBetween(0, users.length - 1)];
-      } while (usedUserIds.has(user._id) && usedUserIds.size < users.length);
-      usedUserIds.add(user._id);
+        userAttempts++;
+      } while (productUsedUserIds.has(user._id) && userAttempts < 30);
+      if (productUsedUserIds.has(user._id)) continue;
+      productUsedUserIds.add(user._id);
 
-      // rating 분포: 5점(40%), 4점(30%), 3점(20%), 2점(7%), 1점(3%)
+      // rating 분포: 5점(45%), 4점(35%), 3점(20%) — 3점 이상만
       const rand = Math.random() * 100;
       let rating;
-      if (rand < 40) rating = 5;
-      else if (rand < 70) rating = 4;
-      else if (rand < 90) rating = 3;
-      else if (rand < 97) rating = 2;
-      else rating = 1;
+      if (rand < 45) rating = 5;
+      else if (rand < 80) rating = 4;
+      else rating = 3;
 
+      // 같은 판매자 상품에 같은 내용의 리뷰가 달리지 않도록
       const templates = reviewTemplates[rating];
-      const template = templates[randomBetween(0, templates.length - 1)];
+      let template;
+      let attempts = 0;
+      do {
+        template = templates[randomBetween(0, templates.length - 1)];
+        attempts++;
+      } while (sellerUsedContents.has(template.content) && attempts < 20);
+      if (sellerUsedContents.has(template.content)) continue;
+      sellerUsedContents.add(template.content);
 
       reviews.push({
         _id: reviewId,

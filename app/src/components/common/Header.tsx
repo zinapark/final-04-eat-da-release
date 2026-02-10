@@ -29,7 +29,7 @@ export default function Header({
   showSearch = false,
   showCart = false,
   showHome = false,
-  showNotification = false,
+  showNotification = showCart,
   onBack,
   onClose,
   onSearch,
@@ -39,9 +39,10 @@ export default function Header({
   const router = useRouter();
   const { cartCount, setCartCount } = useCartStore();
   const user = useUserStore((state) => state.user);
-  const unreadCount = useNotificationStore((state) =>
-    showNotification && user ? state.unreadCountForSeller(user._id) : 0
-  );
+  const unreadCount = useNotificationStore((state) => {
+    if (!showNotification || !user) return 0;
+    return state.unreadCountForSeller(user._id);
+  });
 
   const fetchCartCount = async () => {
     try {
@@ -174,8 +175,8 @@ export default function Header({
                 <img
                   src="/shopping cart.svg"
                   alt="장바구니"
-                  width={22}
-                  height={22}
+                  width={21}
+                  height={21}
                 />
                 {cartCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-eatda-orange text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">

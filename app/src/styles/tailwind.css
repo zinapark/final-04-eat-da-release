@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* =========================
    THEME TOKENS
@@ -10,14 +10,14 @@
   --color-gray-700: #353e5c;
   --color-gray-600: #6d758f;
   --color-gray-500: #a1a7bb;
-  --color-gray-400: #d7dbe7;
+  --color-gray-400: #edeff5;
   --color-gray-300: #edeff5;
   --color-gray-200: #f8faff;
   --color-white: #ffffff;
 
   /* font */
   --font-sans:
-    "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR",
+    'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans KR',
     sans-serif;
 
   /* weights */
@@ -265,6 +265,4 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none; /* Chrome, Safari */
   }
-
 }
-

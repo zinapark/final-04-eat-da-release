@@ -19,6 +19,11 @@ interface UserInfo {
   address: string;
   type: "user" | "seller";
   image: string | { path: string; name: string };
+  extra?: {
+    detailAddress?: string;
+    introduction?: string;
+    profileImage?: { path: string; name: string };
+  };
   bookmark: {
     products: number;
     users: number;

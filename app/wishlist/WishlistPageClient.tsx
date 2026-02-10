@@ -11,12 +11,18 @@ import useUserStore from '@/zustand/userStore';
 import { getTier } from '@/lib/tier';
 
 const ProductCardSkeleton = () => (
-  <div className="p-2 animate-pulse">
-    <div className="w-full aspect-square bg-gray-200 rounded-lg mb-2" />
-    <div className="h-3 bg-gray-200 rounded w-1/2 mb-2" />
-    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
-    <div className="h-3 bg-gray-200 rounded w-1/3 mb-2" />
-    <div className="h-4 bg-gray-200 rounded w-1/2" />
+  <div className="flex flex-col animate-pulse">
+    <div className="w-full aspect-square bg-gray-200" />
+    <div className="pt-4 pb-5 px-2.5 space-y-1">
+      <div className="flex gap-2 items-center">
+        <div className="h-3 bg-gray-200 rounded w-1/3" />
+      </div>
+      <div className="flex items-center gap-1">
+        <div className="h-4 bg-gray-200 rounded w-2/5" />
+        <div className="h-3 bg-gray-200 rounded w-1/5" />
+      </div>
+      <div className="h-4 bg-gray-200 rounded w-1/4" />
+    </div>
   </div>
 );
 

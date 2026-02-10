@@ -11,21 +11,15 @@ import { CartItemType, CartResponse } from '@/app/src/types';
 import useUserStore from '@/zustand/userStore';
 import useCartStore from '@/zustand/cartStore';
 
-// 스켈레톤 컴포넌트
 const CartItemSkeleton = () => (
   <div className="flex gap-3 p-3 bg-gray-50 rounded-lg animate-pulse">
-    {/* 이미지 */}
-    <div className="w-24 h-24 bg-gray-200 rounded-lg flex-shrink-0" />
-
-    {/* 상품 정보 */}
+    <div className="w-24 h-24 bg-gray-200 rounded-lg shrink-0" />
     <div className="flex-1 flex flex-col justify-between">
       <div>
         <div className="h-3 bg-gray-200 rounded w-1/3 mb-2" />
         <div className="h-4 bg-gray-200 rounded w-2/3 mb-2" />
         <div className="h-4 bg-gray-200 rounded w-1/2" />
       </div>
-
-      {/* 수량 및 삭제 버튼 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-gray-200 rounded" />
@@ -56,6 +50,17 @@ export default function CartPageClient() {
 
     fetchCart();
   }, [loggedInUser, router]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      if (loggedInUser || getTokenPayload()) {
+        fetchCart();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [loggedInUser]);
 
   const fetchCart = async () => {
     try {

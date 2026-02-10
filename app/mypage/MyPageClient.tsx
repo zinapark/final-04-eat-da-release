@@ -188,13 +188,13 @@ export default function MyPageClient() {
             <>
               <Link
                 href="/mypage/banchan"
-                className="block py-5 hover:bg-gray-200 cursor-pointer border-b border-gray-400"
+                className="block py-5 hover:bg-gray-200 cursor-pointer border-b border-gray-300"
               >
                 <span className="text-gray-800">반찬 관리</span>
               </Link>
               <Link
                 href="/mypage/orders"
-                className="block py-5 hover:bg-gray-200 cursor-pointer border-b border-gray-400"
+                className="block py-5 hover:bg-gray-200 cursor-pointer border-b border-gray-300"
               >
                 <span className="text-gray-800">주문 / 픽업 관리</span>
               </Link>
@@ -205,35 +205,35 @@ export default function MyPageClient() {
           <div className="flex flex-col">
             <Link
               href="/mypage/purchases"
-              className="py-5 hover:bg-gray-200 cursor-pointer border-b border-gray-400"
+              className="py-5 hover:bg-gray-200 cursor-pointer border-b border-gray-300"
             >
               <span className="text-gray-800">구매 내역</span>
             </Link>
 
             <Link
               href="/mypage/subscription"
-              className="py-5 hover:bg-gray-200 cursor-pointer border-b border-gray-400"
+              className="py-5 hover:bg-gray-200 cursor-pointer border-b border-gray-300"
             >
               <span className="text-gray-800">구독 관리</span>
             </Link>
 
             <Link
               href="/review"
-              className="py-5 hover:bg-gray-200 cursor-pointer border-b border-gray-400"
+              className="py-5 hover:bg-gray-200 cursor-pointer border-b border-gray-300"
             >
               <span className="text-gray-800">반찬 리뷰</span>
             </Link>
 
             <Link
               href="/mypage/verify"
-              className="py-5 hover:bg-gray-200 cursor-pointer border-b border-gray-400"
+              className="py-5 hover:bg-gray-200 cursor-pointer border-b border-gray-300"
             >
               <span className="text-gray-800">개인 정보 설정</span>
             </Link>
 
             <Link
               href="/mypage/support"
-              className="py-5 hover:bg-gray-200 cursor-pointer border-b border-gray-400"
+              className="py-5 hover:bg-gray-200 cursor-pointer border-b border-gray-300"
             >
               <span className="text-gray-800">고객센터</span>
             </Link>

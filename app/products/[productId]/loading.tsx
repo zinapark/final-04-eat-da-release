@@ -81,6 +81,9 @@ export function ProductDetailSkeleton() {
         <div className="h-7 bg-gray-200 rounded w-48" />
         <div className="ml-auto w-6 h-6 bg-gray-200 rounded" />
       </div>
+      <div className="mx-5 -mt-3 animate-pulse">
+        <div className="h-6 bg-gray-200 rounded w-28" />
+      </div>
 
       <SellerProfileSkeleton />
 
@@ -106,6 +109,9 @@ export default function Loading() {
       <div className="flex mx-5 items-center animate-pulse">
         <div className="h-7 bg-gray-200 rounded w-48" />
         <div className="ml-auto w-6 h-6 bg-gray-200 rounded" />
+      </div>
+      <div className="mx-5 -mt-3 animate-pulse">
+        <div className="h-6 bg-gray-200 rounded w-28" />
       </div>
 
       <SellerProfileSkeleton />

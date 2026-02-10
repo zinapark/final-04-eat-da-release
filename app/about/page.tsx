@@ -135,7 +135,7 @@ const STEPS = [
   {
     num: '01',
     title: '앱에서 선택',
-    desc: '동네 주부님들이 만든 다양한 반찬 메뉴 중 원하는 반찬을 골라요',
+    desc: '동네 주부님들이 만든 다양한 반찬 중 원하는 반찬을 골라요',
     img: 'https://res.cloudinary.com/ddedslqvv/image/upload/v1770621235/febc15-final04-ecad/jspcQ1Hmu.jpg',
   },
   {
@@ -293,7 +293,7 @@ export default function AboutPage() {
     <>
       <Header title=" " showBackButton />
 
-      <main className="flex flex-col mt-12 overflow-hidden">
+      <main className="flex flex-col mt-12">
         {/* ── 1. Hero ── */}
         <div
           ref={hero.ref}
@@ -431,7 +431,7 @@ export default function AboutPage() {
             {FEATURES.map((feature, i) => (
               <article
                 key={i}
-                className={`relative rounded-lg overflow-hidden aspect-[2/1] transition-all duration-500 hover:-translate-y-1 active:scale-95 ${
+                className={`relative rounded-lg overflow-hidden aspect-2/1 transition-all duration-500 hover:-translate-y-1 active:scale-95 ${
                   features.isInView
                     ? 'opacity-100 translate-y-0'
                     : 'opacity-0 translate-y-8'
@@ -509,22 +509,20 @@ export default function AboutPage() {
 
           {/* Step content with slide animation */}
           <div
-            className="relative min-h-85"
+            className="relative min-h-85 overflow-hidden"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
             {STEPS.map((step, i) => (
               <div
                 key={i}
-                className={`transition-all duration-500 ${
+                className={`${
                   activeStep === i
-                    ? 'opacity-100 translate-x-0 relative'
-                    : i > activeStep
-                      ? 'opacity-0 translate-x-full absolute inset-0 pointer-events-none'
-                      : 'opacity-0 -translate-x-full absolute inset-0 pointer-events-none'
+                    ? 'relative'
+                    : 'absolute inset-0 pointer-events-none invisible'
                 }`}
               >
-                <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-gradient-to-br from-orange-100 to-amber-50">
+                <div className="relative w-full aspect-4/3 rounded-lg overflow-hidden bg-linear-to-br from-orange-100 to-amber-50">
                   <img
                     src={step.img}
                     alt={step.title}
@@ -586,10 +584,10 @@ export default function AboutPage() {
               return (
                 <div
                   key={section.id}
-                  className={`rounded-lg overflow-hidden border-[0.5px] transition-all duration-500 ${
+                  className={`group rounded-lg overflow-hidden border-[0.5px] transition-all duration-500 cursor-pointer ${
                     isExpanded
-                      ? 'border border-eatda-orange bg-white'
-                      : 'border-gray-200 bg-gray-200'
+                      ? 'border border-eatda-orange bg-white '
+                      : 'border-gray-200 bg-gray-200 hover:text-eatda-orange'
                   } ${
                     usage.isInView
                       ? 'opacity-100 translate-y-0'
@@ -603,7 +601,7 @@ export default function AboutPage() {
                     }
                     className="w-full p-5 flex items-center justify-between"
                   >
-                    <h3 className="text-display-3 font-semibold text-gray-800">
+                    <h3 className="text-display-3 font-semibold text-gray-800 transition-colors duration-500 group-hover:text-eatda-orange">
                       {section.title}
                     </h3>
                     <svg
@@ -662,42 +660,44 @@ export default function AboutPage() {
         {/* ── 7. CTA ── */}
         <section
           ref={cta.ref}
-          className={`text-center pb-18 py-12 px-5 bg-gray-200 from-orange-50 via-white to-amber-50 transition-all duration-1000 ${
+          className={`w-screen relative left-1/2 -translate-x-1/2 bg-gray-200 from-orange-50 via-white to-amber-50 transition-all duration-1000 ${
             cta.isInView
               ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-8'
           }`}
         >
-          <h2 className="text-display-5 font-semibold text-gray-800">
-            지금 바로 시작해보세요
-          </h2>
-          <p className="text-paragraph text-gray-600 mt-2 mb-8">
-            주부님의 손맛이 필요한 자취생이,
-            <br />
-            자취생의 응원이 필요한 주부님이 기다리고 있어요
-          </p>
+          <div className="max-w-[744px] mx-auto text-center pb-18 py-12 px-5">
+            <h2 className="text-display-5 font-semibold text-gray-800">
+              지금 바로 시작해보세요
+            </h2>
+            <p className="text-paragraph text-gray-600 mt-2 mb-8">
+              주부님의 손맛이 필요한 자취생이,
+              <br />
+              자취생의 응원이 필요한 주부님이 기다리고 있어요
+            </p>
 
-          <nav aria-label="시작하기">
-            <ul className="flex flex-col gap-3">
-              <li>
-                <Link
-                  href="/signup?role=seller"
-                  className="group relative block w-full py-4 bg-eatda-orange text-white text-display-3 font-semibold rounded-lg text-center overflow-hidden transition-all duration-300 active:scale-95"
-                >
-                  <span className="relative z-10">주부 가입하기</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/products"
-                  className="block w-full py-4 bg-white border-1 border-eatda-orange text-eatda-orange text-display-3 font-semibold rounded-lg text-center transition-all duration-300 hover:bg-eatda-orange hover:text-white active:scale-95"
-                >
-                  반찬 주문하기
-                </Link>
-              </li>
-            </ul>
-          </nav>
+            <nav aria-label="시작하기">
+              <ul className="flex flex-col gap-3">
+                <li>
+                  <Link
+                    href="/signup?role=seller"
+                    className="group relative block w-full py-4 bg-eatda-orange text-white text-display-3 font-semibold rounded-lg text-center overflow-hidden transition-all duration-300 active:scale-95"
+                  >
+                    <span className="relative z-10">주부 가입하기</span>
+                    <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/products"
+                    className="block w-full py-4 bg-white border border-eatda-orange text-eatda-orange text-display-3 font-semibold rounded-lg text-center transition-all duration-300 hover:bg-eatda-orange hover:text-white active:scale-95"
+                  >
+                    반찬 주문하기
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+          </div>
         </section>
       </main>
     </>

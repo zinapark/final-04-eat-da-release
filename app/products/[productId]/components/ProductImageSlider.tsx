@@ -24,7 +24,7 @@ export default function ProductImageSlider({
   };
 
   return (
-    <div className="relative w-full h-dvw">
+    <div className="relative w-full aspect-square">
       <Swiper
         modules={[Pagination, Navigation]}
         spaceBetween={0}

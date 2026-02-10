@@ -263,6 +263,7 @@ export default function SignupForm() {
           <input
             type="text"
             name="name"
+            autoComplete="off"
             defaultValue={state?.values?.name || ''}
             placeholder="박주부"
             onBlur={(e) => handleBlur('name', e.target.value)}
@@ -285,6 +286,7 @@ export default function SignupForm() {
           <input
             type="email"
             name="email"
+            autoComplete="off"
             defaultValue={state?.values?.email || ''}
             placeholder="example@youremail.com"
             onBlur={(e) => handleBlur('email', e.target.value)}
@@ -307,6 +309,7 @@ export default function SignupForm() {
           <input
             type="password"
             name="password"
+            autoComplete="off"
             value={passwordValue}
             placeholder="안전한 비밀번호를 입력하세요"
             onBlur={(e) => handleBlur('password', e.target.value)}
@@ -329,6 +332,7 @@ export default function SignupForm() {
           <input
             type="password"
             name="confirmPassword"
+            autoComplete="off"
             value={confirmPasswordValue}
             placeholder="비밀번호를 한번 더 입력하세요"
             onBlur={(e) => handleBlur('confirmPassword', e.target.value)}
@@ -348,6 +352,7 @@ export default function SignupForm() {
           <input
             type="tel"
             name="phone"
+            autoComplete="off"
             defaultValue={state?.values?.phone || ''}
             placeholder="010-0000-0000"
             onBlur={(e) => handleBlur('phone', e.target.value)}
@@ -387,6 +392,7 @@ export default function SignupForm() {
           <input
             type="text"
             name="detailAddress"
+            autoComplete="off"
             ref={detailAddressRef}
             defaultValue={state?.values?.detailAddress || ''}
             placeholder="상세주소를 입력하세요"

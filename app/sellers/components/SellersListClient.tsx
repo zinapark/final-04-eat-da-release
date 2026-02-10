@@ -136,24 +136,28 @@ export default function SellersListClient({
             </svg>
           </button>
 
-          {isDropdownOpen && (
-            <div className="absolute top-full right-1 mt-1 bg-white border border-gray-200 rounded-lg overflow-hidden">
-              {(Object.keys(sortLabels) as SortOption[])
-                .filter((option) => option !== sortBy)
-                .map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => {
-                      setSortBy(option);
-                      setIsDropdownOpen(false);
-                    }}
-                    className="block w-full px-4 py-2 text-paragraph text-gray-800 hover:bg-gray-100 text-left whitespace-nowrap"
-                  >
-                    {sortLabels[option]}
-                  </button>
-                ))}
-            </div>
-          )}
+          <div
+            className={`absolute top-full right-1 mt-1 bg-white border border-gray-200 rounded-lg overflow-hidden transition-all duration-200 origin-top ${
+              isDropdownOpen
+                ? 'opacity-100 scale-y-100'
+                : 'opacity-0 scale-y-0 pointer-events-none'
+            }`}
+          >
+            {(Object.keys(sortLabels) as SortOption[])
+              .filter((option) => option !== sortBy)
+              .map((option) => (
+                <button
+                  key={option}
+                  onClick={() => {
+                    setSortBy(option);
+                    setIsDropdownOpen(false);
+                  }}
+                  className="block w-full px-4 py-2 text-paragraph text-gray-800 hover:bg-gray-100 text-left whitespace-nowrap"
+                >
+                  {sortLabels[option]}
+                </button>
+              ))}
+          </div>
         </div>
       </div>
 

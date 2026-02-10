@@ -8,7 +8,7 @@ import { getAxios } from '@/lib/axios';
 import { useRouter } from 'next/navigation';
 import useCartStore from '@/zustand/cartStore';
 
-interface ProductDetailClientProps {
+interface ProductBottomSheetProps {
   product: {
     _id: number;
     name: string;
@@ -20,9 +20,9 @@ interface ProductDetailClientProps {
   };
 }
 
-export default function ProductDetailClient({
+export default function ProductBottomSheet({
   product,
-}: ProductDetailClientProps) {
+}: ProductBottomSheetProps) {
   const router = useRouter();
   const { incrementCart } = useCartStore();
   const [isOpen, setIsOpen] = useState(false);
@@ -60,20 +60,13 @@ export default function ProductDetailClient({
     setIsAddingToCart(true);
     try {
       const axios = getAxios();
-
-      // 현재 상품의 픽업 장소
-      const currentPickupPlace =
-        product.extra?.pickupPlace || '서교동 공유주방';
-
-      // 장바구니 조회
+      const currentPickupPlace = product.extra?.pickupPlace || ' ';
       const cartResponse = await axios.get('/carts');
       const cartItems = cartResponse.data.item || [];
 
-      // 장바구니에 상품이 있으면 픽업 장소 확인
       if (cartItems.length > 0) {
         const firstItem = cartItems[0];
-        const cartPickupPlace =
-          firstItem.product.extra?.pickupPlace || '서교동 공유주방';
+        const cartPickupPlace = firstItem.product.extra?.pickupPlace || ' ';
 
         if (currentPickupPlace !== cartPickupPlace) {
           alert(
@@ -91,15 +84,7 @@ export default function ProductDetailClient({
 
       incrementCart();
 
-      const goToCart = confirm(
-        '장바구니에 담았습니다.\n장바구니로 이동하시겠습니까?'
-      );
-
-      if (goToCart) {
-        router.push('/cart');
-      } else {
-        handleClose();
-      }
+      handleClose();
     } catch (error: any) {
       console.error('장바구니 추가 실패:', error);
 

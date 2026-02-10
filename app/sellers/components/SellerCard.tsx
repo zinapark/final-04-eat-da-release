@@ -32,7 +32,7 @@ export default function SellerCard({
           {topDishes.map((dish, index) => (
             <div
               key={`${dish.name}-${index}`}
-              className="relative aspect-square w-28 shrink-0 overflow-hidden"
+              className="relative aspect-square w-28 shrink-0 overflow-hidden rounded-lg"
             >
               <Image
                 src={dish.imageSrc}
@@ -88,7 +88,7 @@ export default function SellerCard({
           </div>
         </article>
         {showDivider && (
-          <div className="mx-5 border-b-[0.5px] border-gray-400" />
+          <div className="mx-5 border-b-[0.5px] border-gray-300" />
         )}
       </div>
     </Link>

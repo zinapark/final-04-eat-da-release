@@ -4,6 +4,16 @@ import Header from '@/app/src/components/common/Header';
 import ScrollToTop from '@/app/src/components/common/ScrollToTop';
 import { getAxios } from '@/lib/axios';
 import { getTier } from '@/lib/tier';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: '잇다 주부 목록',
+  openGraph: {
+    title: '잇다 주부 목록',
+    description: '주부 목록 페이지',
+    url: '/sellers',
+  },
+};
 
 interface Seller {
   _id?: number;
@@ -38,7 +48,7 @@ interface DishThumbnail {
 async function getSellers(): Promise<Seller[]> {
   try {
     const axios = getAxios();
-    const res = await axios.get('/users/');
+    const res = await axios.get('/users/', { params: { limit: 200 } });
     const items: Seller[] = res.data.item || [];
     return items.filter((user) => user.type === 'seller');
   } catch (error) {
@@ -50,7 +60,7 @@ async function getSellers(): Promise<Seller[]> {
 async function getAllProducts(): Promise<ProductSummary[]> {
   try {
     const axios = getAxios();
-    const res = await axios.get('/products');
+    const res = await axios.get('/products', { params: { limit: 200 } });
     return res.data.item || [];
   } catch (error) {
     console.error('상품 목록 조회 실패:', error);
@@ -83,7 +93,7 @@ function getProductImage(product: ProductSummary): string | null {
   return null;
 }
 
-function getTopDishes(products: ProductSummary[], limit = 5): DishThumbnail[] {
+function getTopDishes(products: ProductSummary[], limit = 6): DishThumbnail[] {
   return products
     .slice()
     .sort((a, b) => {

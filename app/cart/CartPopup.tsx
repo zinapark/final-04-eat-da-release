@@ -79,7 +79,7 @@ export default function CartPopup({
   );
 
   const handleAddToCart = async () => {
-    onAddToCart();
+    await onAddToCart();
     router.push('/cart');
   };
 
@@ -96,7 +96,7 @@ export default function CartPopup({
       <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
 
       <div
-        className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-50 max-h-[70vh] overflow-y-auto"
+        className="fixed max-w-[744px] min-w-[390px] w-full left-1/2 -translate-x-1/2 bottom-0 right-0 bg-white rounded-t-2xl z-50 max-h-[70vh] overflow-y-auto"
         style={{
           transform: `translateY(${translateY}px)`,
           transition: isDragging ? 'none' : 'transform 0.3s ease-out',
@@ -106,7 +106,6 @@ export default function CartPopup({
         onMouseLeave={handleMouseLeave}
       >
         <div className="px-5 pb-5 pt-3 flex flex-col gap-5">
-          {/* 핸들 */}
           <div
             className="w-12 h-1 bg-gray-300 rounded-full mx-auto cursor-grab active:cursor-grabbing"
             onTouchStart={handleTouchStart}
