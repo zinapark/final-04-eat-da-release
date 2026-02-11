@@ -47,7 +47,7 @@ export default function Loading() {
         <div className="h-8 w-18 bg-gray-200 rounded-full animate-pulse" />
       </div>
 
-      <div className="mt-25 mb-16 grid grid-cols-2 sm:grid-cols-3 sm:gap-2">
+      <div className="mt-25 mb-16 grid grid-cols-2 sm:mx-5 sm:grid-cols-3 sm:gap-2">
         {Array.from({ length: 6 }).map((_, i) => (
           <ProductCardSkeleton key={i} />
         ))}

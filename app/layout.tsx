@@ -5,7 +5,6 @@ import { Metadata, Viewport } from 'next';
 import PickupAlarmProvider from '@/app/src/components/common/PickupAlarmProvider';
 import GlobalToastProvider from '@/app/src/components/common/GlobalToastProvider';
 
-
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
@@ -18,11 +17,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: '잇다 - 우리 동네 주부님의 집밥',
-  description: '정성 가득 집밥 한 끼',
+  title: '동네 기반 집밥 구독 서비스, 잇다',
+  description:
+    '주부의 부엌에서, 당신의 식탁까지. 정성 가득한 집밥을 지금 만나보세요.',
   openGraph: {
-    title: '잇다 - 우리 동네 주부님의 집밥',
-    description: '정성 가득 집밥 한 끼',
+    title: '동네 기반 집밥 구독 서비스, 잇다',
+    description:
+      '주부의 부엌에서, 당신의 식탁까지. 정성 가득한 집밥을 지금 만나보세요.',
     images: [
       {
         url: 'https://res.cloudinary.com/ddedslqvv/image/upload/v1770784776/febc15-final04-ecad/oEd-zW4BO.jpg',

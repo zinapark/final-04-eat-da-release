@@ -453,7 +453,7 @@ export default function HomePageClient() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-2 -mx-5 sm:grid-cols-3 sm:gap-2.5">
+          <div className="grid grid-cols-2 -mx-5 sm:mx-0 sm:grid-cols-3 sm:gap-2.5">
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
@@ -464,7 +464,7 @@ export default function HomePageClient() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 -mx-5 sm:grid-cols-3 sm:gap-2.5 ">
+          <div className="grid grid-cols-2 -mx-5 sm:mx-0 sm:grid-cols-3 sm:gap-2.5">
             {filteredProducts.map((product, index) => {
               const reviewCount = Array.isArray(product.replies)
                 ? product.replies.length

@@ -38,6 +38,7 @@ export default function AccountClient() {
   const [profileImageFiles, setProfileImageFiles] = useState<File[]>([]);
   const [initialImages, setInitialImages] = useState<string[]>([]);
   const [existingImage, setExistingImage] = useState<{ path: string; name: string } | null>(null);
+  const [imageCleared, setImageCleared] = useState(false);
 
   const [clientErrors, setClientErrors] = useState<ClientErrors>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -85,13 +86,15 @@ export default function AccountClient() {
       // 이미지 처리 (직접 업로드한 이미지만 표시, 기본 아바타 URL은 제외)
       if (userInfo.image) {
         const imagePath = typeof userInfo.image === 'string' ? userInfo.image : userInfo.image.path;
-        if (!imagePath.startsWith('http')) {
+        const isDicebear = imagePath.includes('dicebear');
+        if (!isDicebear) {
+          const needsPrefix = !imagePath.startsWith('http');
           const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/market', '') || '';
           if (typeof userInfo.image === 'string') {
-            setInitialImages([`${apiUrl}${userInfo.image}`]);
+            setInitialImages([needsPrefix ? `${apiUrl}${userInfo.image}` : userInfo.image]);
             setExistingImage({ path: userInfo.image, name: '' });
           } else {
-            setInitialImages([`${apiUrl}${userInfo.image.path}`]);
+            setInitialImages([needsPrefix ? `${apiUrl}${userInfo.image.path}` : userInfo.image.path]);
             setExistingImage(userInfo.image);
           }
         }
@@ -151,8 +154,14 @@ export default function AccountClient() {
     setClientErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
-  const handleProfileImageChange = (_images: string[], files: File[]) => {
+  const handleProfileImageChange = (images: string[], files: File[]) => {
     setProfileImageFiles(files);
+    if (images.length === 0 && files.length === 0) {
+      setImageCleared(true);
+      setExistingImage(null);
+    } else {
+      setImageCleared(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -181,12 +190,14 @@ export default function AccountClient() {
       if (!payload) return;
 
       // 이미지 업로드
-      let profileImage = existingImage;
+      let profileImage: string | { path: string; name: string } | null = existingImage;
       if (profileImageFiles.length > 0) {
         const uploaded = await uploadImages(profileImageFiles);
         if (uploaded.length > 0) {
           profileImage = uploaded[0];
         }
+      } else if (imageCleared) {
+        profileImage = `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(email)}&backgroundColor=65c9ff,b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
       }
 
       // 변경 데이터 구성
@@ -218,7 +229,7 @@ export default function AccountClient() {
           setUser({
             ...user,
             email,
-            image: profileImage?.path || user.image,
+            image: typeof profileImage === 'string' ? profileImage : profileImage?.path || user.image,
           });
         }
 

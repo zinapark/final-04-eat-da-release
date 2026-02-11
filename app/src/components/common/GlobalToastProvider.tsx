@@ -46,7 +46,7 @@ export default function GlobalToastProvider() {
   if (!user || HIDDEN_PATHS.includes(pathname)) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 max-w-186 min-w-97.5 mx-auto z-60 pointer-events-none pt-5 px-5 flex flex-col items-end gap-5 max-[468px]:items-center">
+    <div className="fixed top-0 right-5 w-105 z-60 pointer-events-none pt-5 flex flex-col items-end gap-5 max-[743px]:inset-x-0 max-[743px]:w-auto max-[743px]:max-w-186 max-[743px]:mx-auto max-[743px]:px-5 max-[468px]:items-center">
       {[...toasts].reverse().map((toast, i) => (
         <Toast
           key={i}

@@ -252,7 +252,7 @@ export default function ProductsListClient({
         </div>
       </div>
 
-      <div className="mt-25 mb-16 grid grid-cols-2 sm:grid-cols-3 sm:gap-2">
+      <div className="mt-25 mb-16 grid grid-cols-2 sm:mx-5 sm:mt-31 sm:grid-cols-3 sm:gap-2">
         {filtered.map((product, index) => (
           <ProductCard
             key={product._id}

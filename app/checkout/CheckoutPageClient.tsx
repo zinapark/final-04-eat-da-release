@@ -172,9 +172,7 @@ export default function CheckoutPageClient() {
     const productName = isDirect
       ? directProduct!.name
       : cartItems.map((item) => item.product.name).join(', ');
-    const totalAmount = isDirect
-      ? directTotalAmount
-      : (cost?.products ?? 0);
+    const totalAmount = isDirect ? directTotalAmount : (cost?.products ?? 0);
 
     window.IMP.init(process.env.NEXT_PUBLIC_IMP_CODE);
     window.IMP.request_pay(
@@ -185,8 +183,13 @@ export default function CheckoutPageClient() {
         name: productName,
         amount: totalAmount,
         buyer_name: '구매자',
+        m_redirect_url: `${window.location.origin}/checkout/complete`,
       },
-      async (response: { success: boolean; imp_uid?: string; error_msg?: string }) => {
+      async (response: {
+        success: boolean;
+        imp_uid?: string;
+        error_msg?: string;
+      }) => {
         if (!response.success) {
           alert(`결제에 실패했습니다: ${response.error_msg}`);
           setIsProcessing(false);
@@ -228,7 +231,10 @@ export default function CheckoutPageClient() {
                 const sellerId = item.product.seller._id;
                 if (!sellerId) continue;
                 const products = sellerProducts.get(sellerId) || [];
-                products.push({ name: item.product.name, quantity: item.quantity });
+                products.push({
+                  name: item.product.name,
+                  quantity: item.quantity,
+                });
                 sellerProducts.set(sellerId, products);
               }
               for (const [sellerId, products] of sellerProducts) {
@@ -242,7 +248,9 @@ export default function CheckoutPageClient() {
           // 픽업 알람 재스케줄링 트리거
           triggerRefresh();
 
-          router.push(`/checkout/complete?orderId=${orderResponse.data.item._id}`);
+          router.push(
+            `/checkout/complete?orderId=${orderResponse.data.item._id}`
+          );
         } catch (error) {
           console.error('주문 생성 실패:', error);
           alert('주문 생성에 실패했습니다. 고객센터로 문의해주세요.');
