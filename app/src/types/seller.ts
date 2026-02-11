@@ -4,7 +4,7 @@ export interface Seller {
   type?: string;
   image?: string;
   extra?: {
-    description?: string;
+    introduction?: string;
     intro?: string;
     profileImage?: string;
   };

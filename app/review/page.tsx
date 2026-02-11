@@ -2,12 +2,8 @@ import ReviewManagementPage from '@/app/review/ReviewPageCilent';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: '잇다 리뷰 페이지',
-  openGraph: {
-    title: '잇다 리뷰 페이지',
-    description: '리뷰 페이지',
-    url: '/review',
-  },
+  title: '리뷰 - 잇다',
+  description: '솔직한 반찬 후기를 써보세요!',
 };
 
 export default function ReviewPage() {

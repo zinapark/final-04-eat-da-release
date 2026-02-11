@@ -24,7 +24,7 @@ const sellers = [
     image:
       'https://api.dicebear.com/9.x/avataaars/svg?seed=misook&backgroundColor=65c9ff,b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
     extra: {
-      description:
+      introduction:
         '30년 주부 경력으로 정성스럽게 만든 집밥을 나눕니다. 아들 둘을 키우며 매일 해온 손맛 그대로 담았어요.',
     },
   },
@@ -40,7 +40,7 @@ const sellers = [
     image:
       'https://api.dicebear.com/9.x/avataaars/svg?seed=jungh&backgroundColor=65c9ff,b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
     extra: {
-      description:
+      introduction:
         '어머니께 배운 전통 레시피로 건강한 밥상을 차립니다. 조미료 없이 자연 재료로만 맛을 내요.',
     },
   },
@@ -56,7 +56,7 @@ const sellers = [
     image:
       'https://api.dicebear.com/9.x/avataaars/svg?seed=sunyoung&backgroundColor=65c9ff,b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
     extra: {
-      description:
+      introduction:
         '요리학원 강사 출신입니다. 맛있고 예쁜 반찬으로 식탁에 행복을 더해드릴게요.',
     },
   },
@@ -72,7 +72,7 @@ const sellers = [
     image:
       'https://api.dicebear.com/9.x/avataaars/svg?seed=eunji&backgroundColor=65c9ff,b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
     extra: {
-      description:
+      introduction:
         '세 아이 엄마로 아이들 입맛에 맞는 건강 반찬을 연구합니다. 편식하는 아이도 맛있게 먹어요.',
     },
   },
@@ -88,7 +88,7 @@ const sellers = [
     image:
       'https://api.dicebear.com/9.x/avataaars/svg?seed=skyhanlllllllllllllllllllll&backgroundColor=65c9ff,b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
     extra: {
-      description:
+      introduction:
         '매일 새벽 시장에서 신선한 재료를 직접 골라요. 좋은 재료가 맛있는 음식의 비결입니다.',
     },
   },
@@ -104,7 +104,7 @@ const sellers = [
     image:
       'https://api.dicebear.com/9.x/avataaars/svg?seed=minsusedc&backgroundColor=65c9ff,b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
     extra: {
-      description:
+      introduction:
         '호텔 조리사 출신으로 은퇴 후 집밥의 따뜻함을 전하고 있어요. 정갈한 한 끼를 약속드립니다.',
     },
   },
@@ -120,7 +120,7 @@ const sellers = [
     image:
       'https://api.dicebear.com/9.x/avataaars/svg?seed=Brian&backgroundColor=65c9ff,b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
     extra: {
-      description:
+      introduction:
         '1인 가구를 위한 소포장 반찬을 준비합니다. 혼밥도 든든하고 맛있게 드세요.',
     },
   },
@@ -136,7 +136,7 @@ const sellers = [
     image:
       'https://api.dicebear.com/9.x/avataaars/svg?seed=Sophia&backgroundColor=65c9ff,b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
     extra: {
-      description:
+      introduction:
         '건강을 생각하는 저염식 반찬을 만듭니다. 맛은 유지하면서 나트륨은 줄였어요.',
     },
   },
@@ -152,7 +152,7 @@ const sellers = [
     image:
       'https://api.dicebear.com/9.x/avataaars/svg?seed=jaehyun&backgroundColor=65c9ff,b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
     extra: {
-      description:
+      introduction:
         '직장인 도시락 전문입니다. 바쁜 하루, 따뜻한 집밥 한 끼로 힘내세요.',
     },
   },
@@ -168,7 +168,7 @@ const sellers = [
     image:
       'https://api.dicebear.com/9.x/avataaars/svg?seed=jungmiaalk&backgroundColor=65c9ff,b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
     extra: {
-      description:
+      introduction:
         '할머니 손맛을 이어받아 옛날 방식 그대로 반찬을 만들어요. 추억의 맛을 느껴보세요.',
     },
   },

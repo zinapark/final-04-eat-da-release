@@ -167,7 +167,7 @@ export default function ReviewList({ reviews }: ReviewListProps) {
             >
               {sortLabels[sortBy]}
               <svg
-                className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                className={`w-4 h-4 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -181,24 +181,28 @@ export default function ReviewList({ reviews }: ReviewListProps) {
               </svg>
             </button>
 
-            {isDropdownOpen && (
-              <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg overflow-hidden z-10">
-                {(Object.keys(sortLabels) as SortOption[])
-                  .filter((option) => option !== sortBy)
-                  .map((option) => (
-                    <button
-                      key={option}
-                      onClick={() => {
-                        setSortBy(option);
-                        setIsDropdownOpen(false);
-                      }}
-                      className="block w-full px-4 py-2 text-paragraph text-gray-800 hover:bg-gray-100 text-left whitespace-nowrap"
-                    >
-                      {sortLabels[option]}
-                    </button>
-                  ))}
-              </div>
-            )}
+            <div
+              className={`absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg overflow-hidden z-10 transition-all duration-200 origin-top ${
+                isDropdownOpen
+                  ? 'opacity-100 scale-y-100'
+                  : 'opacity-0 scale-y-0 pointer-events-none'
+              }`}
+            >
+              {(Object.keys(sortLabels) as SortOption[])
+                .filter((option) => option !== sortBy)
+                .map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => {
+                      setSortBy(option);
+                      setIsDropdownOpen(false);
+                    }}
+                    className="block w-full px-4 py-2 text-paragraph text-gray-800 hover:bg-gray-100 text-left whitespace-nowrap"
+                  >
+                    {sortLabels[option]}
+                  </button>
+                ))}
+            </div>
           </div>
           {hasMoreReviews && (
             <button

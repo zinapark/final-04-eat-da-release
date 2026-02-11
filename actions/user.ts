@@ -2,6 +2,9 @@
 
 import { getAxios } from '@/lib/axios';
 
+// 구독권 썸네일 이미지
+const SUBSCRIPTION_THUMBNAIL = 'https://res.cloudinary.com/ddedslqvv/image/upload/v1770270426/febc15-final04-ecad/WR-ZtdOUy.jpg';
+
 // 구독권 3종 데이터
 const subscriptionProducts = [
   {
@@ -9,6 +12,7 @@ const subscriptionProducts = [
     price: 15000,
     quantity: 999,
     content: '주 2~3회만 집밥을 먹는 분에게 추천! 주 1회 픽업, 픽업당 반찬 3종 제공',
+    mainImages: [{ path: SUBSCRIPTION_THUMBNAIL, name: 'subscription-thumbnail.jpg', originalname: 'subscription-thumbnail.jpg' }],
     extra: {
       category: ['subscription'],
       categoryLabel: '구독권',
@@ -22,6 +26,7 @@ const subscriptionProducts = [
     price: 28000,
     quantity: 999,
     content: '평일 저녁을 자주 집에서 먹는 분에게 추천! 주 2회 픽업, 픽업당 반찬 3~4종 제공',
+    mainImages: [{ path: SUBSCRIPTION_THUMBNAIL, name: 'subscription-thumbnail.jpg', originalname: 'subscription-thumbnail.jpg' }],
     extra: {
       category: ['subscription'],
       categoryLabel: '구독권',
@@ -35,6 +40,7 @@ const subscriptionProducts = [
     price: 39000,
     quantity: 999,
     content: '거의 매일 집밥을 먹는 자취생에게 추천! 주 3회 픽업, 픽업당 반찬 4종 제공',
+    mainImages: [{ path: SUBSCRIPTION_THUMBNAIL, name: 'subscription-thumbnail.jpg', originalname: 'subscription-thumbnail.jpg' }],
     extra: {
       category: ['subscription'],
       categoryLabel: '구독권',
@@ -164,8 +170,8 @@ export async function signup(
     errors.address = { msg: '상세주소를 입력해주세요.' };
   }
 
-  if (type === 'seller' && (!introduction || introduction.length < 100)) {
-    errors.extra = { msg: '자기소개를 100자 이상 입력해주세요.' };
+  if (type === 'seller' && (!introduction || introduction.length < 40)) {
+    errors.extra = { msg: '자기소개를 40자 이상 입력해주세요.' };
   }
 
   const values = { type, name, email, phone, address: addressBase, detailAddress, introduction: introduction || '' };

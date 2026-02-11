@@ -38,10 +38,6 @@ export default function Loading() {
     <div className="flex flex-col gap-7.5 mt-15 pb-23">
       <Header title="주부 목록" showBackButton showSearch showCart />
 
-      <div className="fixed top-22 z-10 flex place-self-end mr-3">
-        <div className="h-8 w-18 bg-gray-200 rounded-full animate-pulse" />
-      </div>
-
       <div>
         {Array.from({ length: 4 }).map((_, i) => (
           <SellerCardSkeleton key={i} />

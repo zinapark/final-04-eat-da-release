@@ -46,6 +46,7 @@ export default function AccountClient() {
   const [submitting, setSubmitting] = useState(false);
 
   const detailAddressRef = useRef<HTMLInputElement>(null);
+  const introductionRef = useRef<HTMLTextAreaElement>(null);
 
   // 유저 정보 로드
   useEffect(() => {
@@ -69,8 +70,16 @@ export default function AccountClient() {
       setAddressValue(userInfo.address || '');
       setDetailAddress(userInfo.extra?.detailAddress || '');
       if (userInfo.extra?.introduction) {
-        setIntroduction(userInfo.extra.introduction);
-        setIntroductionLength(userInfo.extra.introduction.length);
+        const trimmed = userInfo.extra.introduction.slice(0, 100);
+        setIntroduction(trimmed);
+        setIntroductionLength(trimmed.length);
+        setTimeout(() => {
+          const el = introductionRef.current;
+          if (el) {
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+          }
+        }, 0);
       }
 
       // 이미지 처리 (직접 업로드한 이미지만 표시, 기본 아바타 URL은 제외)
@@ -421,10 +430,12 @@ export default function AccountClient() {
               자기소개
             </label>
             <textarea
+              ref={introductionRef}
               value={introduction}
-              placeholder="요리를 시작하게 된 계기나 자신 있는 반찬 이야기를 적어주시면 좋아요. (100자 이상)"
+              placeholder="요리를 시작하게 된 계기나 자신 있는 반찬 이야기를 적어주시면 좋아요. (40자 이상)"
+              maxLength={100}
               className="w-full py-3 border-0 border-b border-gray-400 focus:outline-none focus:border-gray-600 placeholder:text-gray-500 focus:placeholder:text-transparent text-gray-800 text-display-2 placeholder:text-display-2 resize-none overflow-hidden"
-              rows={3}
+              rows={1}
               onChange={(e) => {
                 setIntroduction(e.target.value);
                 setIntroductionLength(e.target.value.length);
@@ -435,7 +446,7 @@ export default function AccountClient() {
                 target.style.height = target.scrollHeight + 'px';
               }}
             />
-            <p className={`text-x-small mt-1 ${introductionLength >= 100 ? 'text-gray-600' : 'text-eatda-orange'}`}>
+            <p className={`text-x-small mt-1 ${introductionLength >= 40 ? 'text-gray-600' : 'text-eatda-orange'}`}>
               {introductionLength}/100
             </p>
           </div>

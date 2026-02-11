@@ -42,7 +42,7 @@ export function getAxios(accessToken?: string) {
 
   instance.interceptors.request.use(
     (config) => {
-      console.log("요청 인터셉터 호출", config);
+      // console.log("요청 인터셉터 호출", config);
 
       // 직접 전달된 토큰 우선 사용, 없으면 localStorage에서 가져오기
       const token = accessToken || getAccessToken();
@@ -62,14 +62,14 @@ export function getAxios(accessToken?: string) {
 
   instance.interceptors.response.use(
     (response) => {
-      console.log("정상 응답 인터셉터 호출", response);
+      // console.log("정상 응답 인터셉터 호출", response);
       if (response.data.ok !== undefined) {
         response.data.ok = !!response.data.ok;
       }
       return response;
     },
     (error) => {
-      console.error("에러 응답 인터셉터 호출", error);
+      // console.error("에러 응답 인터셉터 호출", error);
       // API가 에러 응답 데이터를 보낸 경우 그대로 전달
       if (error.response?.data) {
         return Promise.reject(error);

@@ -24,7 +24,7 @@ export default function BottomFixedButton(props: BottomFixedButtonProps) {
   const wrapperClassName = 'fixed bottom-0 left-0 right-0 z-50';
 
   const baseClassName =
-    'w-full max-w-[744px] mx-auto h-17 flex items-center justify-center pt-2 pb-2 text-white text-display-4 font-semibold bg-eatda-orange hover:opacity-90';
+    'w-full max-w-[744px] mx-auto h-17 flex items-center justify-center pt-2 pb-2 text-white text-display-4 font-semibold bg-eatda-orange cursor-pointer';
 
   const disabledClassName =
     'w-full max-w-[744px] mx-auto h-17 flex items-center justify-center pt-2 pb-2 text-gray-500 text-display-4 font-semibold bg-gray-300 cursor-not-allowed';

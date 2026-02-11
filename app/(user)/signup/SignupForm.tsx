@@ -43,7 +43,7 @@ export default function SignupForm() {
     const textarea = introductionRef.current;
     if (!textarea || textarea.value) return;
 
-    const placeholder = "요리를 시작하게 된 계기나 자신 있는 반찬 이야기를 적어주시면 좋아요. (100자 이상)";
+    const placeholder = "요리를 시작하게 된 계기나 자신 있는 반찬 이야기를 적어주시면 좋아요. (40자 이상)";
     const style = getComputedStyle(textarea);
     const font = `${style.fontSize} ${style.fontFamily}`;
 
@@ -183,7 +183,7 @@ export default function SignupForm() {
         break;
       case 'introduction':
         if (!value) error = '자기소개를 입력해주세요.';
-        else if (value.length < 100) error = '100자 이상 작성해주세요.';
+        else if (value.length < 40) error = '40자 이상 작성해주세요.';
         break;
     }
 
@@ -422,7 +422,8 @@ export default function SignupForm() {
               ref={introductionRef}
               name="introduction"
               defaultValue={state?.values?.introduction || ''}
-              placeholder="요리를 시작하게 된 계기나 자신 있는 반찬 이야기를 적어주시면 좋아요. (100자 이상)"
+              placeholder="요리를 시작하게 된 계기나 자신 있는 반찬 이야기를 적어주시면 좋아요. (40자 이상)"
+              maxLength={100}
               className="w-full py-3 border-0 border-b border-gray-400 focus:outline-none focus:border-gray-600 placeholder:text-gray-500 focus:placeholder:text-transparent text-gray-800 text-display-2 placeholder:text-display-2 resize-none overflow-hidden"
               rows={introductionRows}
               onFocus={() => setIntroductionRows(1)}
@@ -437,7 +438,7 @@ export default function SignupForm() {
                 target.style.height = target.scrollHeight + 'px';
               }}
             />
-            <p className={`text-x-small mt-1 ${introductionLength >= 100 ? 'text-gray-600' : 'text-eatda-orange'}`}>
+            <p className={`text-x-small mt-1 ${introductionLength >= 40 ? 'text-gray-600' : 'text-eatda-orange'}`}>
               {introductionLength}/100
             </p>
             {clientErrors.introduction && (

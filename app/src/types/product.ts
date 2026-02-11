@@ -11,7 +11,7 @@ export interface Product {
     _id?: number;
     name?: string;
     totalSales?: number;
-    extra?: { description?: string; intro?: string };
+    extra?: { introduction?: string; intro?: string };
   };
   rating?: number;
   replies?: Reply[] | number;

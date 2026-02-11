@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { getAxios } from '@/lib/axios';
 import ProductCard from '@/app/src/components/ui/ProductCard';
 import { Product } from '@/app/src/types';
+import useKitchenStore from '@/zustand/kitchenStore';
 
 export default function SearchPageCilent() {
   const router = useRouter();
+  const nearestKitchen = useKitchenStore((state) => state.nearestKitchen);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,10 +28,11 @@ export default function SearchPageCilent() {
       try {
         const productResponse = await axios.get('/products');
         const products = productResponse.data.item || [];
-        // 구독권 제외 후 검색어 필터링
+        // 구독권 제외, 가장 가까운 주방 필터링 후 검색어 필터링
         const matchedProducts = products.filter(
           (product: Product) =>
             !product.extra?.isSubscription &&
+            product.extra?.pickupPlace === nearestKitchen &&
             product.name?.toLowerCase().includes(searchQuery.toLowerCase())
         );
 
@@ -43,7 +46,7 @@ export default function SearchPageCilent() {
 
     const debounceTimer = setTimeout(searchData, 300);
     return () => clearTimeout(debounceTimer);
-  }, [searchQuery]);
+  }, [searchQuery, nearestKitchen]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -89,7 +92,7 @@ export default function SearchPageCilent() {
         </div>
       </header>
 
-      <div className="w-full max-w-[744px] min-w-[390px] mx-auto px-4 sm:px-6">
+      <div className="w-full max-w-[744px] min-w-[390px] mx-auto sm:px-6">
         <div className="pt-19 pb-20">
           {isLoading ? (
             <div className="text-center py-10">

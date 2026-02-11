@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+a,
+button,
+[role="button"],
+[onclick],
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+select,
+label[for] {
+  cursor: pointer;
+}
+
 @theme {
   --color-eatda-orange: #ff6155;
   --color-gray-800: #19213d;

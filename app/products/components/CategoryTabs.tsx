@@ -26,17 +26,29 @@ export default function CategoryTabs({ value, onChange }: CategoryTabsProps) {
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
 
   useEffect(() => {
-    const btn = buttonRefs.current.get(value);
+    const updateIndicator = () => {
+      const btn = buttonRefs.current.get(value);
+      const container = containerRef.current;
+      if (!btn || !container) return;
+
+      const containerRect = container.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+
+      setIndicator({
+        left: btnRect.left - containerRect.left + container.scrollLeft,
+        width: btnRect.width,
+      });
+    };
+
+    updateIndicator();
+
     const container = containerRef.current;
-    if (!btn || !container) return;
+    if (!container) return;
 
-    const containerRect = container.getBoundingClientRect();
-    const btnRect = btn.getBoundingClientRect();
+    const observer = new ResizeObserver(updateIndicator);
+    observer.observe(container);
 
-    setIndicator({
-      left: btnRect.left - containerRect.left + container.scrollLeft,
-      width: btnRect.width,
-    });
+    return () => observer.disconnect();
   }, [value]);
 
   return (

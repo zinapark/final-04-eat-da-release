@@ -199,11 +199,11 @@ export default function ProductsListClient({
       <CategoryTabs value={selected} onChange={setSelected} />
 
       <div
-        className={`fixed top-28 z-15 flex place-self-end mr-3 transition-transform duration-300 ${
+        className={`fixed top-28 z-15 left-0 right-0 max-w-186 mx-auto flex justify-end pr-3 pointer-events-none transition-transform duration-300 ${
           isVisible ? 'translate-y-0' : '-translate-y-20'
         }`}
       >
-        <div className="relative">
+        <div className="relative pointer-events-auto">
           <button
             onClick={(e) => {
               e.stopPropagation();

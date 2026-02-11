@@ -18,10 +18,12 @@ interface ProductBottomSheetProps {
       pickupPlace?: string;
     };
   };
+  availableStock: number;
 }
 
 export default function ProductBottomSheet({
   product,
+  availableStock,
 }: ProductBottomSheetProps) {
   const router = useRouter();
   const { incrementCart } = useCartStore();
@@ -42,6 +44,10 @@ export default function ProductBottomSheet({
   const handleClose = () => setIsOpen(false);
 
   const handleQuantityChange = (id: string, newQuantity: number) => {
+    if (newQuantity > availableStock) {
+      alert(`남은 수량이 ${availableStock}개입니다.`);
+      return;
+    }
     setItems((prev) =>
       prev.map((it) => (it.id === id ? { ...it, quantity: newQuantity } : it))
     );
@@ -86,7 +92,7 @@ export default function ProductBottomSheet({
 
       handleClose();
     } catch (error: any) {
-      console.error('장바구니 추가 실패:', error);
+      // console.error('장바구니 추가 실패:', error);
 
       if (error.response?.status === 409) {
         alert('이미 장바구니에 담긴 상품입니다.');
@@ -117,10 +123,17 @@ export default function ProductBottomSheet({
     router.push('/checkout?direct=true');
   };
 
+  const isSoldOut = availableStock <= 0;
+
   return (
     <>
-      <BottomFixedButton as="button" type="button" onClick={handleOpen}>
-        구매하기
+      <BottomFixedButton
+        as="button"
+        type="button"
+        onClick={handleOpen}
+        disabled={isSoldOut}
+      >
+        {isSoldOut ? '품절' : '구매하기'}
       </BottomFixedButton>
 
       <CartPopup

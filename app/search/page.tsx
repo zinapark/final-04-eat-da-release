@@ -2,12 +2,8 @@ import { Metadata } from 'next';
 import SearchPageCilent from '@/app/search/SearchPageCilent';
 
 export const metadata: Metadata = {
-  title: '잇다 검색',
-  openGraph: {
-    title: '잇다 검색',
-    description: '검색 페이지',
-    url: '/search',
-  },
+  title: '검색 - 잇다',
+  description: '원하는 반찬을 검색해보세요.',
 };
 
 export default function SearchPage() {

@@ -49,7 +49,7 @@ export default function Loading() {
 
       <SellerProfileSkeleton />
 
-      <div className="grid grid-cols-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 sm:gap-2 sm:px-5">
         {Array.from({ length: 4 }).map((_, i) => (
           <ProductCardSkeleton key={i} />
         ))}

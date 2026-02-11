@@ -22,6 +22,9 @@ export default function NotificationsClient() {
   const allNotifications = useNotificationStore((state) => state.notifications);
   const markAsRead = useNotificationStore((state) => state.markAsRead);
   const markAllAsRead = useNotificationStore((state) => state.markAllAsRead);
+  const markAllAsReadForUser = useNotificationStore(
+    (state) => state.markAllAsReadForUser
+  );
 
   useEffect(() => {
     if (!loggedInUser) {
@@ -29,10 +32,19 @@ export default function NotificationsClient() {
     }
   }, [loggedInUser, router]);
 
-  // 현재 판매자의 알림만 필터링 (allNotifications 변경 시 자동 업데이트)
+  // 판매자 주문 알림 + 구매자 픽업 알림 모두 표시
   const notifications = useMemo(() => {
     if (!loggedInUser) return [];
-    return allNotifications.filter((n) => n.sellerId === loggedInUser._id);
+    return allNotifications
+      .filter(
+        (n) =>
+          (n.type === 'order' && n.sellerId === loggedInUser._id) ||
+          ((n.type === 'pickup' || n.type === 'pickup-done') &&
+            n.userId === loggedInUser._id)
+      )
+      .sort(
+        (a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf()
+      );
   }, [allNotifications, loggedInUser]);
 
   const unreadCount = useMemo(() => {
@@ -45,8 +57,16 @@ export default function NotificationsClient() {
 
   const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id);
-    // 주문 관리 페이지로 이동
-    router.push('/mypage/orders');
+    if (notification.type === 'pickup' || notification.type === 'pickup-done') {
+      router.push(`/mypage/purchases/${notification.orderId}`);
+    } else {
+      router.push('/mypage/orders');
+    }
+  };
+
+  const handleMarkAllAsRead = () => {
+    markAllAsRead(loggedInUser._id);
+    markAllAsReadForUser(loggedInUser._id);
   };
 
   const formatTime = (dateString: string) => {
@@ -65,7 +85,7 @@ export default function NotificationsClient() {
           </p>
           {unreadCount > 0 && (
             <button
-              onClick={() => markAllAsRead(loggedInUser._id)}
+              onClick={handleMarkAllAsRead}
               className="text-display-1 text-eatda-orange hover:underline"
             >
               모두 읽음
@@ -75,24 +95,10 @@ export default function NotificationsClient() {
 
         {/* 알림 목록 */}
         {notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="48"
-              height="48"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-            <p className="mt-4 text-display-2">아직 알림이 없어요</p>
-            <p className="mt-1 text-display-1">
-              새 주문이 들어오면 여기에 표시돼요
+          <div className="flex flex-col items-center justify-center text-gray-500 min-h-[calc(100vh-10rem)]">
+            <p className="text-display-3">아직 알림이 없어요</p>
+            <p className="mt-4 text-display-2">
+              새 주문이나 픽업 알림이 여기에 표시돼요
             </p>
           </div>
         ) : (
@@ -115,8 +121,18 @@ export default function NotificationsClient() {
                     }`}
                   >
                     <Image
-                      src="/OrderBag.svg"
-                      alt="주문"
+                      src={
+                        notification.type === 'pickup' ||
+                        notification.type === 'pickup-done'
+                          ? '/NotificationWhite.svg'
+                          : '/OrderBag.svg'
+                      }
+                      alt={
+                        notification.type === 'pickup' ||
+                        notification.type === 'pickup-done'
+                          ? '픽업 알림'
+                          : '주문'
+                      }
                       width={20}
                       height={20}
                     />
@@ -127,23 +143,40 @@ export default function NotificationsClient() {
                     <p
                       className={`text-paragraph ${!notification.isRead ? 'font-semibold' : ''}`}
                     >
-                      새 주문이 들어왔습니다.
+                      {notification.type === 'pickup'
+                        ? '픽업 리마인더'
+                        : notification.type === 'pickup-done'
+                          ? '픽업 알림'
+                          : '새 주문이 들어왔습니다.'}
                     </p>
-                    {/* 제품 목록 표시 */}
-                    {notification.text.startsWith('새 주문: ') && (
-                      <div className="mt-1">
-                        {notification.text
-                          .replace('새 주문: ', '')
-                          .split(', ')
-                          .map((item, idx) => (
-                            <p
-                              key={idx}
-                              className="text-display-1 text-gray-600"
-                            >
-                              {item}
-                            </p>
-                          ))}
+                    {notification.type === 'pickup' ||
+                    notification.type === 'pickup-done' ? (
+                      <div className="text-display-1 text-gray-600 mt-1">
+                        {notification.text.split('\n').map((line, idx) => (
+                          <p key={idx}>
+                            {line.replace(
+                              /(\d{1,2})-(\d{1,2})(?!시)/,
+                              '$1시-$2시'
+                            )}
+                          </p>
+                        ))}
                       </div>
+                    ) : (
+                      notification.text.startsWith('새 주문: ') && (
+                        <div className="mt-1">
+                          {notification.text
+                            .replace('새 주문: ', '')
+                            .split(', ')
+                            .map((item, idx) => (
+                              <p
+                                key={idx}
+                                className="text-display-1 text-gray-600"
+                              >
+                                {item}
+                              </p>
+                            ))}
+                        </div>
+                      )
                     )}
                     <p className="text-display-1 text-gray-500 mt-1">
                       {formatTime(notification.createdAt)}

@@ -62,7 +62,7 @@ export default function ProductDetailClient({
         setSellerTier(sellerInfo.tier);
       }
     } catch (error) {
-      console.error('상품 조회 실패:', error);
+      // console.error('상품 조회 실패:', error);
     } finally {
       setIsLoading(false);
     }
@@ -92,11 +92,16 @@ export default function ProductDetailClient({
       const totalSales = sellerFromList?.totalSales ?? 0;
 
       return {
-        image: seller?.extra?.profileImage ?? seller?.image,
+        image: seller?.extra?.profileImage
+          ?? (typeof seller?.image === 'string'
+            ? seller.image
+            : seller?.image?.path
+              ? getImageUrl(seller.image.path)
+              : undefined),
         tier: getTier(totalSales),
       };
     } catch (error) {
-      console.error('판매자 정보 조회 실패:', error);
+      // console.error('판매자 정보 조회 실패:', error);
       return { image: undefined, tier: getTier(0) };
     }
   };
@@ -116,7 +121,7 @@ export default function ProductDetailClient({
           setBookmarkId(response.data.item._id);
         } catch (error: any) {
           if (error.response?.status === 422) {
-            console.log('이미 북마크되어 있음 - 북마크 목록 재조회');
+            // console.log('이미 북마크되어 있음 - 북마크 목록 재조회');
             const bookmarksRes = await axios.get('/bookmarks');
             const bookmarks = bookmarksRes.data.item || [];
             const existing = bookmarks.find((b: any) => {
@@ -132,7 +137,7 @@ export default function ProductDetailClient({
         }
       }
     } catch (error) {
-      console.error('북마크 토글 실패:', error);
+      // console.error('북마크 토글 실패:', error);
     }
   };
 
@@ -144,7 +149,7 @@ export default function ProductDetailClient({
   const ingredients: string[] = extra.ingredients ?? [];
   const serving: string = `${extra.servings ?? 2}인분`;
   const pickupPlace: string = extra.pickupPlace ?? '서교동 공유주방';
-  const stock: number = product.quantity ?? 0;
+  const stock: number = (product.quantity ?? 0) - (product.buyQuantity ?? 0);
   const productImages = product.mainImages?.map(
     (img: { path: string }) => img.path
   ) ?? ['/food/food_01.png'];
@@ -152,7 +157,7 @@ export default function ProductDetailClient({
   const seller = product.seller ?? {};
   const sellerName: string = seller.name ?? '주부';
   const sellerDescription: string =
-    seller.extra?.description ?? seller.extra?.intro ?? '';
+    seller.extra?.introduction ?? seller.extra?.intro ?? '';
   const rating: number = product.rating ?? 0;
   const reviewCount: number = reviews.length;
 
@@ -235,7 +240,7 @@ export default function ProductDetailClient({
         />
       </div>
 
-      <ProductDetailBottomSheet product={product} />
+      <ProductDetailBottomSheet product={product} availableStock={stock} />
     </main>
   );
 }

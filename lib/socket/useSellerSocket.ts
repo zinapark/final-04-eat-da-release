@@ -11,7 +11,7 @@ import { getSocket } from '@/lib/socket/socket';
 import { useEffect, useState, useCallback } from 'react';
 import useNotificationStore from '@/zustand/notificationStore';
 import { fetchSellerOrders } from '@/lib/orders';
-import type { OrderProduct } from './sendOrder';
+import { type OrderProduct, isSendingOrder } from './sendOrder';
 
 // 토스트 알림 타입
 export type ToastNotification = {
@@ -51,7 +51,9 @@ export function useSellerSocket(sellerId: number) {
           .join(', ');
 
         addNotification({
+          type: 'order',
           sellerId,
+          userId: 0,
           orderId: order._id,
           text: `새 주문: ${productNames}`,
           productName: order.products.map((p) => p.name).join(', '),
@@ -73,22 +75,30 @@ export function useSellerSocket(sellerId: number) {
     const socket = getSocket();
 
     // 판매자 전용 방 생성 및 입장
+    // 서버가 이전 세션의 user_id를 기억하므로 매번 고유 ID 사용
+    const uniqueId = `${sellerId}_${Date.now()}`;
+
     const setupRoom = () => {
       socket.emit(
         'createRoom',
         {
           roomId: `seller-${sellerId}`,
-          user_id: sellerId,
+          user_id: uniqueId,
           hostName: `seller-${sellerId}`,
           roomName: `seller-${sellerId}`,
         },
         () => {
-          // 방이 이미 있거나 새로 만들어졌으면 입장
-          socket.emit('joinRoom', {
-            roomId: `seller-${sellerId}`,
-            user_id: sellerId,
-            nickName: `판매자`,
-          });
+          socket.emit(
+            'joinRoom',
+            {
+              roomId: `seller-${sellerId}`,
+              user_id: uniqueId,
+              nickName: `판매자`,
+            },
+            (joinRes: unknown) => {
+              void joinRes;
+            }
+          );
         }
       );
     };
@@ -102,6 +112,9 @@ export function useSellerSocket(sellerId: number) {
 
     // 메시지 수신 (토스트 표시 + 알림 목록 갱신)
     socket.on('message', (data) => {
+      // 자기가 보낸 메시지는 무시 (구매자가 seller 타입일 때 자기 토스트 방지)
+      if (isSendingOrder) return;
+
       if (typeof data.msg === 'string' && data.msg.startsWith('ORDER_DATA:')) {
         try {
           const jsonStr = data.msg.replace('ORDER_DATA:', '');
@@ -121,7 +134,7 @@ export function useSellerSocket(sellerId: number) {
     });
 
     return () => {
-      socket.emit('leaveRoom');
+      // leaveRoom 호출하지 않음 - 판매자는 항상 방에 남아있어야 메시지 수신 가능
       socket.off('message');
     };
   }, [sellerId, fetchPendingOrders]);

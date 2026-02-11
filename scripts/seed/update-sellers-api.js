@@ -66,7 +66,7 @@ async function main() {
       // extra 업데이트 (description 포함)
       const newExtra = {
         ...seller.extra,
-        intro: seller.extra?.description ?? `${seller.name}의 집밥을 정성껏 담아드려요.`,
+        intro: seller.extra?.introduction ?? `${seller.name}의 집밥을 정성껏 담아드려요.`,
         rating: 4.6,
         reviewCount: 0,
       };

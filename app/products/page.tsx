@@ -6,12 +6,9 @@ import { getAxios } from '@/lib/axios';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: '잇다 반찬 목록',
-  openGraph: {
-    title: '잇다 반찬 목록',
-    description: '반찬 목록 페이지',
-    url: '/products',
-  },
+  title: '반찬 둘러보기 - 잇다',
+  description:
+    '우리 동네 주부님들이 정성껏 만든 다양한 집밥 반찬을 둘러보세요.',
 };
 
 interface Seller {
@@ -30,7 +27,7 @@ async function getProducts(): Promise<Product[]> {
     // 구독권 제외
     return products.filter((p: Product) => !p.extra?.isSubscription);
   } catch (error) {
-    console.error('상품 조회 실패:', error);
+    // console.error('상품 조회 실패:', error);
     return [];
   }
 }
@@ -42,7 +39,7 @@ async function getSellers(): Promise<Seller[]> {
     const items: Seller[] = res.data.item || [];
     return items.filter((user) => user.type === 'seller');
   } catch (error) {
-    console.error('판매자 목록 조회 실패:', error);
+    // console.error('판매자 목록 조회 실패:', error);
     return [];
   }
 }

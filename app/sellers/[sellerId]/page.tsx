@@ -22,10 +22,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const sellerName = seller?.name ?? '판매자';
     const sellerDescription =
-      seller?.extra?.description ??
+      seller?.extra?.introduction ??
       seller?.extra?.intro ??
       '정성스럽게 만든 집밥을 나눕니다.';
-    const sellerProfileImage = seller?.extra?.profileImage ?? seller?.image;
+    const sellerProfileImage = seller?.extra?.profileImage
+      ?? (typeof seller?.image === 'string' ? seller.image : undefined);
 
     return {
       title: `${sellerName} 주부 - 잇다`,
@@ -37,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch (error) {
-    console.error('메타데이터 생성 실패:', error);
+    // console.error('메타데이터 생성 실패:', error);
     return {
       title: '판매자 상세 - 잇다',
       openGraph: {
@@ -54,7 +55,7 @@ interface Seller {
   email: string;
   image?: string | { path: string };
   extra?: {
-    description?: string;
+    introduction?: string;
     intro?: string;
     profileImage?: string;
   };
@@ -84,7 +85,7 @@ async function getSeller(sellerId: string): Promise<Seller | null> {
     const res = await axios.get(`/users/${sellerId}`);
     return res.data.item;
   } catch (error) {
-    console.error('판매자 정보 조회 실패:', error);
+    // console.error('판매자 정보 조회 실패:', error);
     return null;
   }
 }
@@ -103,7 +104,7 @@ async function getSellers(): Promise<SellerFromList[]> {
     const items: SellerFromList[] = res.data.item || [];
     return items.filter((user) => user.type === 'seller');
   } catch (error) {
-    console.error('판매자 목록 조회 실패:', error);
+    // console.error('판매자 목록 조회 실패:', error);
     return [];
   }
 }
@@ -118,7 +119,7 @@ async function getSellerProducts(sellerId: string): Promise<Product[]> {
     // 구독권 제외
     return products.filter((p: Product) => !p.extra?.isSubscription);
   } catch (error) {
-    console.error('판매자 상품 조회 실패:', error);
+    // console.error('판매자 상품 조회 실패:', error);
     return [];
   }
 }
@@ -147,7 +148,7 @@ async function getSellerReviews(productIds: number[]): Promise<Review[]> {
 
     return allReviews;
   } catch (error) {
-    console.error('리뷰 조회 실패:', error);
+    // console.error('리뷰 조회 실패:', error);
     return [];
   }
 }
@@ -175,7 +176,7 @@ async function getUserImageMap(userIds: number[]) {
         .map((item) => [item.userId, item.image!])
     );
   } catch (error) {
-    console.error('유저 이미지 조회 실패:', error);
+    // console.error('유저 이미지 조회 실패:', error);
     return new Map();
   }
 }
@@ -213,7 +214,7 @@ export default async function SellersDetailPage({
 
   const sellerName = seller?.name ?? '주부';
   const sellerDescription =
-    seller?.extra?.description ??
+    seller?.extra?.introduction ??
     seller?.extra?.intro ??
     '정성스럽게 만든 집밥을 나눕니다.';
   const sellerProfileImage =
@@ -253,7 +254,7 @@ export default async function SellersDetailPage({
         description={sellerDescription}
       />
       {/* 반찬 리스트 */}
-      <div className="grid grid-cols-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 sm:gap-2 sm:px-5">
         {products.length > 0 ? (
           products.map((product) => (
             <ProductCard

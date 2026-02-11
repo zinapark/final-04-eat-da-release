@@ -205,7 +205,7 @@ export default function SubscriptionClient() {
         profileImage:
           seller?.extra?.profileImage ?? seller?.image ?? '/seller/seller1.png',
         description:
-          seller?.extra?.description ??
+          seller?.extra?.introduction ??
           seller?.extra?.intro ??
           '정성스럽게 만든 집밥을 나눕니다.',
         tier: tier.label,

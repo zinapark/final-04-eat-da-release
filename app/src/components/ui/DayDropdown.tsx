@@ -77,7 +77,7 @@ export default function DayDropdown({
             height="20"
             viewBox="0 0 20 20"
             fill="none"
-            className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
+            className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
           >
             <path
               d="M5 7.5L10 12.5L15 7.5"
@@ -89,25 +89,29 @@ export default function DayDropdown({
           </svg>
         </span>
 
-        {isOpen && (
-          <ul className="absolute left-0 top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1 max-h-60 overflow-y-auto">
-            {dayOptions.map((option) => (
-              <li key={option.value}>
-                <button
-                  type="button"
-                  onClick={() => handleSelect(option.value)}
-                  className={`w-full text-left px-4 py-2.5 text-display-2 hover:bg-gray-100 cursor-pointer ${
-                    value === option.value
-                      ? "text-eatda-orange font-semibold"
-                      : "text-gray-800"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+        <ul
+          className={`absolute left-0 top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1 max-h-60 overflow-y-auto transition-all duration-200 origin-top ${
+            isOpen
+              ? "opacity-100 scale-y-100"
+              : "opacity-0 scale-y-0 pointer-events-none"
+          }`}
+        >
+          {dayOptions.map((option) => (
+            <li key={option.value}>
+              <button
+                type="button"
+                onClick={() => handleSelect(option.value)}
+                className={`w-full text-left px-4 py-2.5 text-display-2 hover:bg-gray-100 cursor-pointer ${
+                  value === option.value
+                    ? "text-eatda-orange font-semibold"
+                    : "text-gray-800"
+                }`}
+              >
+                {option.label}
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
       {error && (
         <p className="text-x-small text-eatda-orange mt-1">{error}</p>

@@ -1,13 +1,9 @@
-import { Metadata } from "next";
-import CartPageClient from "./CartPageClient";
+import { Metadata } from 'next';
+import CartPageClient from './CartPageClient';
 
 export const metadata: Metadata = {
-  title: "잇다 장바구니",
-  openGraph: {
-    title: "잇다 장바구니",
-    description: "장바구니 페이지",
-    url: "/cart",
-  },
+  title: '장바구니 - 잇다',
+  description: '담아둔 반찬을 확인하고 주문을 완료하세요.',
 };
 
 export default function CartPage() {

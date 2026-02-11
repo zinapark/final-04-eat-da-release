@@ -8,6 +8,7 @@ import { getAxios } from '@/lib/axios';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { sendOrder } from '@/lib/socket/sendOrder';
+import useNotificationStore from '@/zustand/notificationStore';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 
@@ -29,6 +30,7 @@ declare global {
 export default function CheckoutPageClient() {
   const axios = getAxios();
   const router = useRouter();
+  const triggerRefresh = useNotificationStore((state) => state.triggerRefresh);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isProductInfoOpen, setIsProductInfoOpen] = useState(false);
@@ -130,151 +132,124 @@ export default function CheckoutPageClient() {
 
     setIsProcessing(true);
 
-    try {
-      const pickupDateValue =
-        selectedDate === 'tomorrow'
+    const pickupDateValue =
+      selectedDate === 'today'
+        ? dayjs().format('YYYY-MM-DD')
+        : selectedDate === 'tomorrow'
           ? tomorrow.format('YYYY-MM-DD')
           : after_tomorrow.format('YYYY-MM-DD');
 
-      // 결제 금액
-      const totalAmount = isDirect ? directTotalAmount : (cost?.products ?? 0);
+    const merchantUid = `order_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
-      // 주문 고유 ID 생성 (타임스탬프 + 랜덤)
-      const merchantUid = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-      // 상품명 생성
-      const productName = isDirect
-        ? directProduct!.name
-        : cartItems.length > 1
-          ? `${cartItems[0].product.name} 외 ${cartItems.length - 1}건`
-          : cartItems[0].product.name;
-
-      // 아임포트 가맹점 식별코드
-      const IMP_CODE = process.env.NEXT_PUBLIC_IMP_CODE || 'imp10391932';
-
-      // 주문 데이터 준비 (모바일 결제 후 사용)
-      const orderData = isDirect
-        ? {
-            products: [
-              {
-                _id: directProduct!._id,
-                quantity: directQuantity,
-              },
-            ],
-            extra: {
-              pickupDate: pickupDateValue,
-              pickupTime: selectedTime,
+    const orderData = isDirect
+      ? {
+          products: [
+            {
+              _id: directProduct!._id,
+              quantity: directQuantity,
             },
-            isDirect: true,
-          }
-        : {
-            products: cartItems.map((item) => ({
-              _id: item.product._id,
-              quantity: item.quantity,
-            })),
-            extra: {
-              pickupDate: pickupDateValue,
-              pickupTime: selectedTime,
-            },
-            isDirect: false,
-          };
-
-      // 모바일 결제를 위해 주문 정보 임시 저장
-      localStorage.setItem('pendingOrder', JSON.stringify(orderData));
-
-      // 아임포트 초기화
-      window.IMP.init(IMP_CODE);
-
-      // 결제 요청
-      window.IMP.request_pay(
-        {
-          pg: 'html5_inicis.INIpayTest', // PG사.상점아이디
-          pay_method: 'card',
-          merchant_uid: merchantUid,
-          name: productName,
-          amount: totalAmount,
-          buyer_name: '구매자', // 실제 사용자 정보로 교체 필요
-          buyer_tel: '010-0000-0000',
-          buyer_email: 'buyer@example.com',
-          m_redirect_url: `${window.location.origin}/checkout/complete`, // 모바일 결제 후 리다이렉트 URL
-          custom_data: {
+          ],
+          extra: {
             pickupDate: pickupDateValue,
             pickupTime: selectedTime,
-            isDirect: isDirect.toString(),
           },
-        },
-        async (rsp: any) => {
-          if (rsp.success) {
-            // 결제 성공 (PC/데스크톱)
-            try {
-              // 서버에 주문 생성
-              const finalOrderData = {
-                ...orderData,
-                extra: {
-                  ...orderData.extra,
-                  imp_uid: rsp.imp_uid,
-                  merchant_uid: rsp.merchant_uid,
-                },
-              };
-
-              const orderResponse = await axios.post('/orders', finalOrderData);
-
-              // localStorage 정리
-              localStorage.removeItem('pendingOrder');
-
-              if (isDirect) {
-                localStorage.removeItem('directPurchase');
-              } else {
-                await axios.delete('/carts/cleanup');
-              }
-
-              // 판매자에게 주문 알림 전송
-              try {
-                if (isDirect && directProduct?.seller?._id) {
-                  await sendOrder(directProduct.seller._id, [
-                    { name: directProduct.name, quantity: directQuantity },
-                  ]);
-                } else {
-                  // 판매자별로 제품 그룹화
-                  const sellerProducts = new Map<number, { name: string; quantity: number }[]>();
-                  for (const item of cartItems) {
-                    const sellerId = item.product.seller._id;
-                    if (!sellerId) continue;
-                    const products = sellerProducts.get(sellerId) || [];
-                    products.push({ name: item.product.name, quantity: item.quantity });
-                    sellerProducts.set(sellerId, products);
-                  }
-                  // 판매자별로 순차 전송
-                  for (const [sellerId, products] of sellerProducts) {
-                    await sendOrder(sellerId, products);
-                  }
-                }
-              } catch (e) {
-                console.error('주문 알림 전송 실패:', e);
-              }
-
-              // 완료 페이지로 이동
-              router.push(
-                `/checkout/complete?orderId=${orderResponse.data.item._id}`
-              );
-            } catch (error) {
-              console.error('주문 생성 실패:', error);
-              alert('주문 생성에 실패했습니다. 고객센터로 문의해주세요.');
-              setIsProcessing(false);
-            }
-          } else {
-            // 결제 실패
-            localStorage.removeItem('pendingOrder');
-            alert(`결제에 실패했습니다: ${rsp.error_msg}`);
-            setIsProcessing(false);
-          }
+          isDirect: true,
         }
-      );
-    } catch (error) {
-      console.error('결제 처리 실패:', error);
-      alert('결제 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
-      setIsProcessing(false);
-    }
+      : {
+          products: cartItems.map((item) => ({
+            _id: item.product._id,
+            quantity: item.quantity,
+          })),
+          extra: {
+            pickupDate: pickupDateValue,
+            pickupTime: selectedTime,
+          },
+          isDirect: false,
+        };
+
+    localStorage.setItem('pendingOrder', JSON.stringify(orderData));
+
+    const productName = isDirect
+      ? directProduct!.name
+      : cartItems.map((item) => item.product.name).join(', ');
+    const totalAmount = isDirect
+      ? directTotalAmount
+      : (cost?.products ?? 0);
+
+    window.IMP.init(process.env.NEXT_PUBLIC_IMP_CODE);
+    window.IMP.request_pay(
+      {
+        pg: 'html5_inicis',
+        pay_method: 'card',
+        merchant_uid: merchantUid,
+        name: productName,
+        amount: totalAmount,
+        buyer_name: '구매자',
+      },
+      async (response: { success: boolean; imp_uid?: string; error_msg?: string }) => {
+        if (!response.success) {
+          alert(`결제에 실패했습니다: ${response.error_msg}`);
+          setIsProcessing(false);
+          return;
+        }
+
+        try {
+          const finalOrderData = {
+            ...orderData,
+            extra: {
+              ...orderData.extra,
+              imp_uid: response.imp_uid,
+              merchant_uid: merchantUid,
+            },
+          };
+
+          const orderResponse = await axios.post('/orders', finalOrderData);
+
+          localStorage.removeItem('pendingOrder');
+
+          if (isDirect) {
+            localStorage.removeItem('directPurchase');
+          } else {
+            await axios.delete('/carts/cleanup');
+          }
+
+          // 판매자에게 주문 알림 전송
+          try {
+            if (isDirect && directProduct?.seller?._id) {
+              await sendOrder(directProduct.seller._id, [
+                { name: directProduct.name, quantity: directQuantity },
+              ]);
+            } else {
+              const sellerProducts = new Map<
+                number,
+                { name: string; quantity: number }[]
+              >();
+              for (const item of cartItems) {
+                const sellerId = item.product.seller._id;
+                if (!sellerId) continue;
+                const products = sellerProducts.get(sellerId) || [];
+                products.push({ name: item.product.name, quantity: item.quantity });
+                sellerProducts.set(sellerId, products);
+              }
+              for (const [sellerId, products] of sellerProducts) {
+                await sendOrder(sellerId, products);
+              }
+            }
+          } catch (e) {
+            console.error('주문 알림 전송 실패:', e);
+          }
+
+          // 픽업 알람 재스케줄링 트리거
+          triggerRefresh();
+
+          router.push(`/checkout/complete?orderId=${orderResponse.data.item._id}`);
+        } catch (error) {
+          console.error('주문 생성 실패:', error);
+          alert('주문 생성에 실패했습니다. 고객센터로 문의해주세요.');
+          setIsProcessing(false);
+        }
+      }
+    );
   };
 
   return (

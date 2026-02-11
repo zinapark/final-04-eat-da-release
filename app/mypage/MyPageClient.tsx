@@ -10,8 +10,6 @@ import useUserStore from '@/zustand/userStore';
 import { fetchSellerTier } from '@/lib/tier';
 import { getImageUrl } from '@/lib/review';
 import { MyPageSkeleton } from './loading';
-import { useSellerSocket } from '@/lib/socket/useSellerSocket';
-import OrderToast from '@/app/src/components/ui/OrderToast';
 
 type UserInfo = Awaited<ReturnType<typeof getUser>>;
 
@@ -31,14 +29,9 @@ export default function MyPageClient() {
     router.replace('/login');
   };
 
-  // 판매자일 때 소켓 알림 수신
-  const { toasts, removeToast } = useSellerSocket(
-    user?.type === 'seller' ? user._id : 0
-  );
-
   useEffect(() => {
     if (!loggedInUser) {
-      router.replace('/login?redirect=/mypage');
+      router.replace('/login');
       return;
     }
 
@@ -92,16 +85,6 @@ export default function MyPageClient() {
 
   return (
     <div className="px-5 mt-16 mb-24 flex flex-1 flex-col gap-5 min-h-[calc(100vh-10rem)]">
-      {/* 토스트 알림 (실시간) */}
-      {toasts.map((toast, i) => (
-        <OrderToast
-          key={i}
-          index={i}
-          items={toast.items}
-          onClose={() => removeToast(i)}
-        />
-      ))}
-
       {/* 프로필 섹션 */}
       <section className="p-5 border border-gray-300 rounded-lg bg-gray-200">
         <div className="flex items-start gap-2.5">

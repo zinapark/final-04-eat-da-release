@@ -7,6 +7,9 @@ export type OrderProduct = {
   quantity: number;
 };
 
+// 전송 중 플래그 - 구매자 측 메시지 핸들러에서 자기 메시지를 무시하기 위함
+export let isSendingOrder = false;
+
 // 판매자에게 주문 알림을 전송하는 함수
 export function sendOrder(
   sellerId: number,
@@ -16,6 +19,8 @@ export function sendOrder(
     const socket = getSocket();
 
     const send = () => {
+      isSendingOrder = true;
+
       socket.emit(
         'joinRoom',
         {
@@ -31,9 +36,11 @@ export function sendOrder(
             // 메시지 전송 후 방에서 퇴장
             setTimeout(() => {
               socket.emit('leaveRoom');
+              isSendingOrder = false;
               resolve();
             }, 500);
           } else {
+            isSendingOrder = false;
             resolve();
           }
         }

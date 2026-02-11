@@ -67,6 +67,7 @@ export default function HomePageClient() {
   const [recommendProducts, setRecommendProducts] = useState<Product[]>([]);
   const [recommendSeller, setRecommendSeller] =
     useState<SellerWithStats | null>(null);
+  const [allSellers, setAllSellers] = useState<Seller[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showSplash, setShowSplash] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -100,6 +101,12 @@ export default function HomePageClient() {
   const filteredProducts = useMemo(
     () => products.filter((p) => p.extra?.pickupPlace === nearestKitchen),
     [products, nearestKitchen]
+  );
+
+  const filteredRecommendProducts = useMemo(
+    () =>
+      recommendProducts.filter((p) => p.extra?.pickupPlace === nearestKitchen),
+    [recommendProducts, nearestKitchen]
   );
 
   useEffect(() => {
@@ -138,6 +145,7 @@ export default function HomePageClient() {
         );
 
         setProducts(allProducts);
+        setAllSellers(sellers);
 
         const today = new Date().toDateString();
         const stored = localStorage.getItem('dailyRecommend');
@@ -171,72 +179,6 @@ export default function HomePageClient() {
             })
           );
         }
-
-        const storedSeller = localStorage.getItem('dailyRecommendSeller');
-        let foundSeller = false;
-
-        if (storedSeller) {
-          const { date, sellerId } = JSON.parse(storedSeller);
-          if (date === today) {
-            const seller = sellers.find((s: Seller) => s._id === sellerId);
-            if (seller) {
-              const sellerProductCount = allProducts.filter(
-                (p: Product) => p.seller?._id === seller._id
-              ).length;
-
-              console.log(
-                `저장된 주부 ${seller.name}의 상품 수:`,
-                sellerProductCount
-              );
-
-              if (sellerProductCount >= 6) {
-                const sellerWithStats = calculateSellerStats(
-                  seller,
-                  allProducts
-                );
-                setRecommendSeller(sellerWithStats);
-                foundSeller = true;
-              }
-            }
-          }
-        }
-
-        if (!foundSeller) {
-          const eligibleSellers = sellers.filter((seller: Seller) => {
-            const productCount = allProducts.filter(
-              (p: Product) => p.seller?._id === seller._id
-            ).length;
-            return productCount >= 6;
-          });
-
-          console.log(
-            '3개 이상 상품을 등록한 주부 수:',
-            eligibleSellers.length
-          );
-
-          if (eligibleSellers.length > 0) {
-            const randomSeller =
-              eligibleSellers[
-                Math.floor(Math.random() * eligibleSellers.length)
-              ];
-
-            console.log('선정된 주부:', randomSeller.name);
-
-            const sellerWithStats = calculateSellerStats(
-              randomSeller,
-              allProducts
-            );
-            setRecommendSeller(sellerWithStats);
-
-            localStorage.setItem(
-              'dailyRecommendSeller',
-              JSON.stringify({
-                date: today,
-                sellerId: randomSeller._id,
-              })
-            );
-          }
-        }
       } catch (error) {
         console.error('데이터 조회 실패:', error);
       } finally {
@@ -246,6 +188,70 @@ export default function HomePageClient() {
 
     fetchData();
   }, []);
+
+  // 가장 가까운 주방에 반찬이 있는 주부만 추천
+  useEffect(() => {
+    if (products.length === 0 || allSellers.length === 0) return;
+
+    const kitchenProducts = products.filter(
+      (p) => p.extra?.pickupPlace === nearestKitchen
+    );
+
+    const today = new Date().toDateString();
+    const storedSeller = localStorage.getItem('dailyRecommendSeller');
+    let foundSeller = false;
+
+    if (storedSeller) {
+      try {
+        const { date, sellerId } = JSON.parse(storedSeller);
+        if (date === today) {
+          const seller = allSellers.find((s) => s._id === sellerId);
+          if (seller) {
+            const hasKitchenProducts = kitchenProducts.some(
+              (p) => p.seller?._id === seller._id
+            );
+            if (hasKitchenProducts) {
+              const sellerWithStats = calculateSellerStats(seller, products);
+              setRecommendSeller(sellerWithStats);
+              foundSeller = true;
+            }
+          }
+        }
+      } catch {
+        // 캐시 파싱 실패 시 무시
+      }
+    }
+
+    if (!foundSeller) {
+      const eligibleSellers = allSellers.filter((seller) => {
+        const hasKitchenProducts = kitchenProducts.some(
+          (p) => p.seller?._id === seller._id
+        );
+        const totalProductCount = products.filter(
+          (p) => p.seller?._id === seller._id
+        ).length;
+        return hasKitchenProducts && totalProductCount >= 6;
+      });
+
+      if (eligibleSellers.length > 0) {
+        const randomSeller =
+          eligibleSellers[Math.floor(Math.random() * eligibleSellers.length)];
+
+        const sellerWithStats = calculateSellerStats(randomSeller, products);
+        setRecommendSeller(sellerWithStats);
+
+        localStorage.setItem(
+          'dailyRecommendSeller',
+          JSON.stringify({
+            date: today,
+            sellerId: randomSeller._id,
+          })
+        );
+      } else {
+        setRecommendSeller(null);
+      }
+    }
+  }, [products, allSellers, nearestKitchen]);
 
   const calculateSellerStats = (
     seller: Seller,
@@ -315,10 +321,10 @@ export default function HomePageClient() {
                 : 'opacity-0 translate-y-8'
             }`}
           >
-            <h1 className="relative flex items-center justify-center mx-10 text-3xl font-bold text-[#ffffff] min-[390px]:text-[#ff6155] leading-tight">
+            <h1 className="relative flex items-center justify-center mx-10 text-3xl font-bold text-[#ffffff] min-[391px]:text-[#ff6155] leading-tight">
               <span className="shrink-0">잇</span>
               <span
-                className="flex-1 h-1 bg-[#ffffff] min-[390px]:bg-[#ff6155] mx-3 overflow-hidden"
+                className="flex-1 h-1 bg-[#ffffff] min-[391px]:bg-[#ff6155] mx-3 overflow-hidden"
                 style={
                   splashVisible
                     ? { animation: 'line-expand 0.8s ease-in 1.1s both' }
@@ -358,7 +364,7 @@ export default function HomePageClient() {
           </div>
         </Link>
 
-        <div>
+        <div className="min-[744px]:max-w min-[744px]:mx-auto">
           <p className="text-display-5 font-semibold pb-4">오늘의 추천 반찬</p>
           <div className="flex gap-1 overflow-x-auto pb-4 -mx-5 px-5 scrollbar-hide">
             {isLoading ? (
@@ -368,14 +374,14 @@ export default function HomePageClient() {
                 ))}
               </>
             ) : (
-              recommendProducts.map((product) => (
+              filteredRecommendProducts.map((product) => (
                 <RecommendProduct key={product._id} product={product} />
               ))
             )}
           </div>
         </div>
 
-        <div className="mb-1">
+        <div className="mb-1 min-[744px]:max-w min-[744px]:mx-auto">
           <p className="text-display-5 font-semibold pb-4">
             오늘의 추천 주부님
           </p>
@@ -433,7 +439,7 @@ export default function HomePageClient() {
                   '/seller/seller1.png'
                 }
                 description={
-                  recommendSeller.extra?.description ??
+                  recommendSeller.extra?.introduction ??
                   recommendSeller.extra?.intro ??
                   '정성스럽게 만든 집밥을 나눕니다.'
                 }

@@ -5,7 +5,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: '마이페이지',
-  description: '사용자 정보 및 메뉴',
+  description: '내 정보, 주문 내역, 리뷰 관리 등 나의 활동을 확인하세요.',
 };
 
 export default function MyPage() {

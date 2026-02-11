@@ -1,13 +1,9 @@
-import WishlistPageClient from "./WishlistPageClient";
-import { Metadata } from "next";
+import WishlistPageClient from './WishlistPageClient';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "잇다 찜 목록",
-  openGraph: {
-    title: "잇다 찜 목록",
-    description: "찜 페이지",
-    url: "/wishlist",
-  },
+  title: '위시리스트 - 잇다',
+  description: '찜한 반찬을 한눈에 확인하고 주문하세요.',
 };
 
 export default function WishlistPage() {

@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch (error) {
-    console.error('메타데이터 생성 실패:', error);
+    // console.error('메타데이터 생성 실패:', error);
     return {
       title: '상품 상세 - 잇다',
       openGraph: {

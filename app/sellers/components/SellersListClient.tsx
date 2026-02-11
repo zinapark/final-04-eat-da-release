@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import SellerCard from '@/app/sellers/components/SellerCard';
+import useKitchenStore from '@/zustand/kitchenStore';
+import { getImageUrl } from '@/lib/review';
 
 type SortOption = 'recommend' | 'rating' | 'review' | 'product';
 
@@ -16,9 +18,9 @@ interface SellerCardData {
   sellerId: number;
   seller: {
     name?: string;
-    image?: string;
+    image?: string | { path?: string };
     extra?: {
-      description?: string;
+      introduction?: string;
       intro?: string;
       profileImage?: string;
     };
@@ -28,6 +30,7 @@ interface SellerCardData {
   reviewCount: number;
   productCount: number;
   tier: string;
+  kitchens: string[];
 }
 
 interface SellersListClientProps {
@@ -69,14 +72,18 @@ function sortSellers(
 export default function SellersListClient({
   sellerCards,
 }: SellersListClientProps) {
+  const nearestKitchen = useKitchenStore((state) => state.nearestKitchen);
   const [sortBy, setSortBy] = useState<SortOption>('recommend');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
 
   const sortedSellers = useMemo(() => {
-    return sortSellers(sellerCards, sortBy);
-  }, [sellerCards, sortBy]);
+    const kitchenFiltered = sellerCards.filter((card) =>
+      card.kitchens.includes(nearestKitchen)
+    );
+    return sortSellers(kitchenFiltered, sortBy);
+  }, [sellerCards, sortBy, nearestKitchen]);
 
   useEffect(() => {
     const handleClickOutside = () => setIsDropdownOpen(false);
@@ -108,11 +115,11 @@ export default function SellersListClient({
   return (
     <>
       <div
-        className={`fixed top-22 z-10 flex place-self-end mr-3 transition-transform duration-300 ${
+        className={`fixed top-20 z-10 left-0 right-0 max-w-186 mx-auto flex justify-end pr-3 pointer-events-none transition-transform duration-300 ${
           isVisible ? 'translate-y-0' : '-translate-y-20'
         }`}
       >
-        <div className="relative">
+        <div className="relative pointer-events-auto">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -161,18 +168,21 @@ export default function SellersListClient({
         </div>
       </div>
 
-      <div>
+      <div className="mt-14 mb-16 max-w-186 mx-auto">
         {sortedSellers.map((card, index) => {
           const isLast = index === sortedSellers.length - 1;
           const sellerName = card.seller.name ?? '주부';
           const sellerDescription =
-            card.seller.extra?.description ??
+            card.seller.extra?.introduction ??
             card.seller.extra?.intro ??
             '정성스럽게 만든 집밥을 나눕니다.';
           const sellerProfileImage =
             card.seller.extra?.profileImage ??
-            card.seller.image ??
-            '/seller/seller1.png';
+            (typeof card.seller.image === 'string'
+              ? card.seller.image
+              : card.seller.image?.path
+                ? getImageUrl(card.seller.image.path)
+                : '/seller/seller1.png');
 
           return (
             <SellerCard

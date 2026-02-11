@@ -14,9 +14,9 @@ interface Seller {
   _id: number;
   name: string;
   email: string;
-  image?: string;
+  image?: string | { path?: string };
   extra?: {
-    description?: string;
+    introduction?: string;
     intro?: string;
     profileImage?: string;
   };
@@ -35,7 +35,7 @@ async function getSeller(sellerId: string): Promise<Seller | null> {
     const res = await axios.get(`/users/${sellerId}`);
     return res.data.item;
   } catch (error) {
-    console.error("판매자 정보 조회 실패:", error);
+    // console.error("판매자 정보 조회 실패:", error);
     return null;
   }
 }
@@ -47,7 +47,7 @@ async function getSellers(): Promise<SellerFromList[]> {
     const items: SellerFromList[] = res.data.item || [];
     return items.filter((user) => user.type === "seller");
   } catch (error) {
-    console.error("판매자 목록 조회 실패:", error);
+    // console.error("판매자 목록 조회 실패:", error);
     return [];
   }
 }
@@ -61,7 +61,7 @@ async function getSellerProducts(sellerId: string): Promise<Product[]> {
     const products = res.data.item || [];
     return products.filter((p: Product) => !p.extra?.isSubscription);
   } catch (error) {
-    console.error("판매자 상품 조회 실패:", error);
+    // console.error("판매자 상품 조회 실패:", error);
     return [];
   }
 }
@@ -75,7 +75,7 @@ async function getSubscriptionProducts(sellerId: string): Promise<Product[]> {
     const products = res.data.item || [];
     return products.filter((p: Product) => p.extra?.isSubscription === true);
   } catch (error) {
-    console.error("구독권 상품 조회 실패:", error);
+    // console.error("구독권 상품 조회 실패:", error);
     return [];
   }
 }
@@ -101,11 +101,16 @@ export default async function SubscriptionPage({
 
   const sellerName = seller?.name ?? "주부";
   const sellerDescription =
-    seller?.extra?.description ??
+    seller?.extra?.introduction ??
     seller?.extra?.intro ??
     "정성스럽게 만든 집밥을 나눕니다.";
   const sellerProfileImage =
-    seller?.extra?.profileImage ?? seller?.image ?? "/seller/seller1.png";
+    seller?.extra?.profileImage
+    ?? (typeof seller?.image === "string"
+      ? seller.image
+      : seller?.image?.path
+        ? `${process.env.NEXT_PUBLIC_API_URL}${seller.image.path}`
+        : "/seller/seller1.png");
 
   const totalRating =
     products.length > 0
