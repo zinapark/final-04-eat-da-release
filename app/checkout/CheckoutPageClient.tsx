@@ -183,6 +183,7 @@ export default function CheckoutPageClient() {
         name: productName,
         amount: totalAmount,
         buyer_name: '구매자',
+        buyer_email: 'customer@example.com',
         m_redirect_url: `${window.location.origin}/checkout/complete`,
       },
       async (response: {
