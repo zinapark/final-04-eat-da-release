@@ -16,6 +16,7 @@ export interface Product {
   rating?: number;
   replies?: Reply[] | number;
   myBookmarkId?: number;
+  show?: boolean;
   extra?: {
     category?: string[];
     categoryLabel?: string;

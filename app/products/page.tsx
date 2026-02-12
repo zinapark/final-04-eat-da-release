@@ -5,6 +5,9 @@ import { Product } from '@/app/src/types';
 import { getAxios } from '@/lib/axios';
 import { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: '반찬 둘러보기 - 잇다',
   description:

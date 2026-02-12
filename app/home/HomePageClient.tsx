@@ -141,7 +141,7 @@ export default function HomePageClient() {
         });
 
         const allProducts = productsWithSellerStats.filter(
-          (p: Product) => !p.extra?.isSubscription
+          (p: Product) => !p.extra?.isSubscription && p.show !== false
         );
 
         setProducts(allProducts);
