@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export type OrderItem = {
   name: string;
@@ -35,9 +35,56 @@ export default function Toast({
   message,
   onClose,
 }: ToastProps) {
+  const toastRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
   const [offSetY, setOffsetY] = useState(0);
+  const closingRef = useRef(false);
   const { title, textColor } = config[variant];
+
+  // 진입 애니메이션
+  useEffect(() => {
+    const el = toastRef.current;
+    if (!el) return;
+    const isMobile = window.matchMedia('(max-width: 468px)').matches;
+    el.animate(
+      isMobile
+        ? [
+            { transform: 'translateY(-100%)' },
+            { transform: 'translateY(0)' },
+          ]
+        : [
+            { transform: 'translateX(100%)' },
+            { transform: 'translateX(0)' },
+          ],
+      { duration: 350, easing: 'ease-out', fill: 'forwards' },
+    );
+  }, []);
+
+  const handleClose = () => {
+    if (closingRef.current) return;
+    closingRef.current = true;
+
+    const el = toastRef.current;
+    if (!el) {
+      onClose();
+      return;
+    }
+
+    const isMobile = window.matchMedia('(max-width: 468px)').matches;
+    const anim = el.animate(
+      isMobile
+        ? [
+            { transform: 'translateY(0)' },
+            { transform: 'translateY(-100%)' },
+          ]
+        : [
+            { transform: 'translateX(0)' },
+            { transform: 'translateX(100%)' },
+          ],
+      { duration: 300, easing: 'ease-in', fill: 'forwards' },
+    );
+    anim.onfinish = () => onClose();
+  };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     startY.current = e.touches[0].clientY;
@@ -50,7 +97,7 @@ export default function Toast({
 
   const handleTouchEnd = () => {
     if (offSetY < -50) {
-      onClose();
+      handleClose();
     } else {
       setOffsetY(0);
     }
@@ -58,15 +105,16 @@ export default function Toast({
 
   return (
     <div
+      ref={toastRef}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      onClick={onClose}
+      onClick={handleClose}
       style={{
         transform: `translateY(${offSetY}px)`,
       }}
-      className={`w-full max-w-105 self-end max-[468px]:self-center bg-gray-200 border border-gray-300 ${textColor}
-      p-5 rounded-lg shadow-lg transition-transform duration-150 cursor-pointer pointer-events-auto`}
+      className={`w-full max-w-105 self-end max-[468px]:self-center bg-gray-200/70 backdrop-blur-sm border border-gray-300 ${textColor}
+      p-5 rounded-lg shadow-lg cursor-pointer pointer-events-auto`}
     >
       <p className="text-display-2 font-semibold whitespace-nowrap">{title}</p>
       <div className="mt-1">

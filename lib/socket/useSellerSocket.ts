@@ -50,6 +50,7 @@ export function useSellerSocket(sellerId: number) {
           .map((p) => `${p.name} ${p.quantity}개`)
           .join(', ');
 
+        console.log('[fetchPendingOrders] 알림 추가:', order._id, productNames);
         addNotification({
           type: 'order',
           sellerId,
@@ -59,8 +60,8 @@ export function useSellerSocket(sellerId: number) {
           productName: order.products.map((p) => p.name).join(', '),
         });
       }
-    } catch {
-      // 주문 조회 실패 시 무시
+    } catch (e) {
+      console.error('[fetchPendingOrders] 주문 조회 실패:', e);
     }
   }, [sellerId, addNotification, hasOrderNotification]);
 
@@ -123,10 +124,18 @@ export function useSellerSocket(sellerId: number) {
           // 토스트 알림에 추가 (화면에 실시간 표시)
           setToasts((prev) => [...prev, { items }]);
 
-          // 서버에서 주문이 저장된 후 알림 목록 갱신 (약간의 딜레이)
-          setTimeout(() => {
-            fetchPendingOrders();
-          }, 1000);
+          // 소켓 데이터로 직접 알림 생성
+          const productNames = items
+            .map((p) => `${p.name} ${p.quantity}개`)
+            .join(', ');
+          addNotification({
+            type: 'order',
+            sellerId,
+            userId: 0,
+            orderId: Date.now(),
+            text: `새 주문: ${productNames}`,
+            productName: items.map((p) => p.name).join(', '),
+          });
         } catch {
           // 잘못된 데이터면 무시
         }

@@ -27,6 +27,8 @@ export default function ProductDetailClient({
   const [sellerTier, setSellerTier] = useState<
     { level: number; label: string } | undefined
   >();
+  const [sellerRating, setSellerRating] = useState<number>(0);
+  const [sellerReviewCount, setSellerReviewCount] = useState<number>(0);
   const [bookmarkId, setBookmarkId] = useState<number | undefined>();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -60,6 +62,8 @@ export default function ProductDetailClient({
         const sellerInfo = await getSellerInfo(productData.seller._id);
         setSellerProfileImage(sellerInfo.image);
         setSellerTier(sellerInfo.tier);
+        setSellerRating(sellerInfo.avgRating);
+        setSellerReviewCount(sellerInfo.totalReviewCount);
       }
     } catch (error) {
       // console.error('상품 조회 실패:', error);
@@ -73,23 +77,37 @@ export default function ProductDetailClient({
   ): Promise<{
     image: string | undefined;
     tier: { level: number; label: string };
+    avgRating: number;
+    totalReviewCount: number;
   }> => {
     try {
       const axios = getAxios();
 
-      const [sellerRes, usersRes] = await Promise.all([
+      const [sellerRes, usersRes, sellerProductsRes] = await Promise.all([
         axios.get(`/users/${sellerId}`),
         axios.get('/users/'),
+        axios.get('/products/', { params: { seller_id: sellerId, limit: 200 } }),
       ]);
 
       const seller = sellerRes.data.item;
       const users = usersRes.data.item || [];
+      const sellerProducts: Product[] = sellerProductsRes.data.item || [];
 
       const sellerFromList = users.find(
         (u: { _id?: number; seller_id?: number; totalSales?: number }) =>
           u._id === sellerId || u.seller_id === sellerId
       );
       const totalSales = sellerFromList?.totalSales ?? 0;
+
+      const avgRating =
+        sellerProducts.length > 0
+          ? sellerProducts.reduce((sum, p) => sum + (p.rating ?? 0), 0) / sellerProducts.length
+          : 0;
+      const totalReviewCount = sellerProducts.reduce(
+        (sum, p) =>
+          sum + (Array.isArray(p.replies) ? p.replies.length : (p.replies ?? 0)),
+        0
+      );
 
       return {
         image: seller?.extra?.profileImage
@@ -99,10 +117,12 @@ export default function ProductDetailClient({
               ? getImageUrl(seller.image.path)
               : undefined),
         tier: getTier(totalSales),
+        avgRating,
+        totalReviewCount,
       };
     } catch (error) {
       // console.error('판매자 정보 조회 실패:', error);
-      return { image: undefined, tier: getTier(0) };
+      return { image: undefined, tier: getTier(0), avgRating: 0, totalReviewCount: 0 };
     }
   };
 
@@ -158,9 +178,6 @@ export default function ProductDetailClient({
   const sellerName: string = seller.name ?? '주부';
   const sellerDescription: string =
     seller.extra?.introduction ?? seller.extra?.intro ?? '';
-  const rating: number = product.rating ?? 0;
-  const reviewCount: number = reviews.length;
-
   return (
     <main className="flex flex-col mt-12.5 gap-5 pb-23">
       <Header title=" " showBackButton showSearch showCart />
@@ -183,8 +200,8 @@ export default function ProductDetailClient({
       <SellerProfileCard
         name={sellerName}
         tier={sellerTier?.label}
-        rating={rating}
-        reviewCount={reviewCount}
+        rating={sellerRating}
+        reviewCount={sellerReviewCount}
         profileImage={sellerProfileImage}
         description={sellerDescription}
         sellerId={product.seller?._id}

@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import { OrderData } from '@/app/src/types';
+import { sendOrder } from '@/lib/socket/sendOrder';
 
 dayjs.locale('ko');
 
@@ -52,6 +53,27 @@ export default function CompletePageClient() {
           };
 
           const orderResponse = await axios.post('/orders', orderData);
+          try {
+            // pendingOrder에서 상품 정보 가져오기
+            const products = pendingOrder.products;
+
+            // 각 상품의 판매자 정보를 가져와서 알림 전송
+            for (const product of products) {
+              const productDetail = await axios.get(`/products/${product._id}`);
+              const sellerId = productDetail.data.item.seller._id;
+
+              if (sellerId) {
+                await sendOrder(sellerId, [
+                  {
+                    name: productDetail.data.item.name,
+                    quantity: product.quantity,
+                  },
+                ]);
+              }
+            }
+          } catch (e) {
+            console.error('주문 알림 전송 실패:', e);
+          }
 
           // localStorage 정리
           localStorage.removeItem('pendingOrder');
@@ -223,7 +245,9 @@ export default function CompletePageClient() {
 
         <div className="flex justify-between">
           <p className="text-paragraph font-semibold">
-            {(orderData.extra as any)?.isSubscription ? '주간 결제 금액' : '총 결제 금액'}
+            {(orderData.extra as any)?.isSubscription
+              ? '주간 결제 금액'
+              : '총 결제 금액'}
           </p>
           <p className="text-paragraph font-semibold text-eatda-orange">
             {(orderData.extra as any)?.isSubscription
